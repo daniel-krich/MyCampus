@@ -9,6 +9,7 @@ using MyCampusUI.Consts;
 using System.Text;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
 
 namespace MyCampusUI.Services
 {
@@ -60,6 +61,12 @@ namespace MyCampusUI.Services
             return Task.CompletedTask;
         }
 
+        public override Task AuthenticationFailed(AuthenticationFailedContext context)
+        {
+            ResetSessionCookies(context);
+            return Task.CompletedTask;
+        }
+
         public override async Task TokenValidated(TokenValidatedContext context)
         {
             if (context.Request.Path == "/_blazor")
@@ -86,12 +93,16 @@ namespace MyCampusUI.Services
                         }
                     }
                 }
-                // Delete the cookie if invalid.
-                CookieOptions cookieOptions = new CookieOptions();
-                cookieOptions.Expires = new DateTime(1970, 1, 1, 0, 0, 0);
-                context.Response.Cookies.Append(CookiesConst.AccessCookie, "", cookieOptions);
+                ResetSessionCookies(context);
                 context.Fail("Session expired");
             }
+        }
+
+        private void ResetSessionCookies(ResultContext<JwtBearerOptions> context)
+        {
+            CookieOptions cookieOptions = new CookieOptions();
+            cookieOptions.Expires = new DateTime(1970, 1, 1, 0, 0, 0);
+            context.Response.Cookies.Append(CookiesConst.AccessCookie, "", cookieOptions);
         }
     }
 }
