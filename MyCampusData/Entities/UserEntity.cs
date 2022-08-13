@@ -11,23 +11,30 @@ namespace MyCampusData.Entities
     public class UserEntity : BaseEntity
     {
 #nullable disable
-        [MaxLength(30)]
+        [Required, MaxLength(30)]
         public string Username { get; set; }
+
+        [Required]
         public byte[] PasswordHash { get; set; }
+
+        [Required]
         public byte[] PasswordSalt { get; set; }
         public GenderEnum Gender { get; set; }
         public UserPermissionsEnum Permissions { get; set; }
-        public virtual ICollection<UserCoursesEntity> Courses { get; set; }
+        public virtual ICollection<UserCourseEntity> Courses { get; set; }
+        public virtual ICollection<CourseEntity> LecturingCourses { get; set; }
+        public virtual ICollection<SessionEntity> Sessions { get; set; }
 
-        [MaxLength(128)]
+        [Required, MaxLength(128)]
         public string Email { get; set; }
-        [MaxLength(16)]
-        public string PhoneNumber { get; set; }
-        [MaxLength(32)]
-        public string Country { get; set; }
-        [MaxLength(32)]
-        public string City { get; set; }
-        public DateTime CreatedDate { get; set; }
 
+        [Required, MaxLength(16)]
+        public string PhoneNumber { get; set; }
+
+        [Required, MaxLength(32)]
+        public string Country { get; set; }
+
+        [Required, MaxLength(32)]
+        public string City { get; set; }
     }
 }

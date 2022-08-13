@@ -1,0 +1,82 @@
+﻿@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<EditForm Context="RegisterContext" OnValidSubmit="@SubmitAsync" Model="this.register">
+    <DataAnnotationsValidator />
+    <div class="row mb-3">
+        <div class="col">
+            <label for="usernameInput" class="form-label">שם משתמש</label>
+            <input type="text" class="form-control" @bind="@register.Username" id="usernameInput" minlength="5" maxlength="30" required>
+        </div>
+        <div class="col">
+            <label for="passwordInput" class="form-label">סיסמה</label>
+            <input type="password" class="form-control" @bind="@register.Password" id="passwordInput" minlength="8" maxlength="30" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="emailInput" class="form-label">דוא"ל</label>
+            <input type="email" class="form-control" @bind="@register.Email" id="emailInput" minlength="10" maxlength="128" required>
+        </div>
+        <div class="col">
+            <label for="phoneInput" class="form-label">מספר טלפון</label>
+            <input type="tel" class="form-control" @bind="@register.PhoneNumber" id="phoneInput" minlength="10" maxlength="16" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="cityInput" class="form-label">עיר</label>
+            <input type="text" class="form-control" @bind="@register.City" id="cityInput" minlength="5" maxlength="32" required>
+        </div>
+        <div class="col">
+            <label for="genderSelect" class="form-label">מין</label>
+            <InputSelect id="genderSelect" class="form-select" @bind-Value="@register.Gender" required>
+              <option selected></option>
+              <option value="@(nameof(GenderEnum.Male))">זכר</option>
+              <option value="@(nameof(GenderEnum.Female))">נקבה</option>
+              <option value="@(nameof(GenderEnum.Other))">אחר</option>
+            </InputSelect>
+        </div>
+    </div>
+    <div class="mb-3 form-check">
+        <label class="form-check-label" for="confirmInput">אני מסכים לכל תנאי השימוש</label>
+        <input type="checkbox" class="form-check-input float-end ms-2" id="confirmInput" required>
+    </div>
+    <button type="submit" class="btn btn-primary rounded-pill w-100 mb-3">הרשמה</button>
+</EditForm>
+
+@code {
+    private RegisterModel register = new();
+    private async Task SubmitAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            try
+            {
+                using var hmac = new HMACSHA512();
+
+                UserEntity user = new UserEntity
+                    {
+                        Username = register.Username,
+                        PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password)),
+                        PasswordSalt = hmac.Key,
+                        Email = register.Email,
+                        PhoneNumber = register.PhoneNumber,
+                        Country = register.Country,
+                        City = register.City,
+                        Gender = register.Gender ?? GenderEnum.Other,
+                        Permissions = UserPermissionsEnum.WaitingApproval
+                    };
+
+                dbContext.Users.Add(user);
+                await dbContext.SaveChangesAsync();
+
+                Trace.WriteLine(JsonSerializer.Serialize(user));
+                Trace.WriteLine("Success");
+            }
+            catch(Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
+        }
+    }
+}

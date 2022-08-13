@@ -1,0 +1,48 @@
+﻿@inject IAuthenticationStateService authentication
+
+<div class="auth-overlay">
+    <div class="auth-group mb-5">
+        <h1 class="title">הקמפוס שלי</h1>
+        <div class="auth-box">
+            <div class="card">
+                <div class="card-header auth-box-header">
+                    <div class="row">
+                        <div class="col">
+                            <span role="button" class="@registerLabelClass" @onclick="@SwitchToRegister">הרשמה</span>
+                        </div>
+                        <div class="col">
+                            <span role="button" class="@loginLabelClass" @onclick="@SwitchToLogin">התחברות</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (isLogin)
+                    {
+                        <Login />
+                    }
+                    else
+                    {
+                        <Register />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLogin = true;
+
+    private string registerLabelClass => !isLogin ? "active" : null;
+    private string loginLabelClass => isLogin ? "active" : null;
+
+    private void SwitchToLogin()
+    {
+        isLogin = true;
+    }
+
+    private void SwitchToRegister()
+    {
+        isLogin = false;
+    }
+}

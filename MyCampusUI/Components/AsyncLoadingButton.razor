@@ -1,0 +1,42 @@
+﻿@implements IDisposable
+
+<button  @attributes="InputAttributes" @onclick="@DoWork">
+    @if(doingWork)
+    {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    private CancellationTokenSource cts = new CancellationTokenSource();
+    private bool doingWork;
+    [Parameter] public Func<CancellationToken, Task>? ButtonTask { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? InputAttributes { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task DoWork()
+    {
+        if (!doingWork)
+        {
+            doingWork = true;
+            if (ButtonTask != null)
+            {
+                try
+                {
+                    await ButtonTask.Invoke(cts.Token);
+                }
+                catch (OperationCanceledException) { }
+            }
+
+            doingWork = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        cts.Cancel();
+        cts.Dispose();
+    }
+}

@@ -1,0 +1,38 @@
+﻿@inject IDbContextFactory<CampusContext> campusContextFactory
+@inject IAuthenticationStateService authService
+@inject IJSRuntime jsRuntime
+@inject NavigationManager navManager
+
+<EditForm Context="LoginContext" OnValidSubmit="@SubmitAsync" Model="this.login">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="usernameInput" class="form-label">שם משתמש</label>
+        <input type="text" class="form-control" @bind="login.Username" id="usernameInput" minlength="5" maxlength="30" required>
+    </div>
+    <div class="mb-3">
+        <label for="passwordInput" class="form-label">סיסמה</label>
+        <input type="password" class="form-control" @bind="login.Password" id="passwordInput"  minlength="8" maxlength="30" required>
+    </div>
+    <div class="mb-3 form-check">
+        <label class="form-check-label" for="rememberInput">זכור אותי</label>
+        <input type="checkbox" class="form-check-input float-end ms-2" @bind="login.RememberUser" id="rememberInput">
+    </div>
+    <button type="submit" class="btn btn-primary rounded-pill w-100 mb-3">התחברות</button>
+</EditForm>
+
+@code {
+    private LoginModel login = new();
+    private async Task SubmitAsync()
+    {
+        CookieModel cookie = await authService.CreateJwtSessionToken(login.Username, login.Password, login.RememberUser);
+        if(cookie.IsSuccess && cookie.Token != null)
+        {
+            await jsRuntime.WriteCookie(CookiesConst.AccessCookie, cookie.Token, cookie.ExpireAt);
+            navManager.NavigateTo("/", true);
+        }
+        else
+        {
+            // failed login.
+        }
+    }
+}
