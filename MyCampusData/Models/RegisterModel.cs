@@ -16,6 +16,12 @@ namespace MyCampusData.Models
         [Required, MinLength(8), MaxLength(30)]
         public string Password { get; set; } = "";
 
+        [Required, MinLength(2), MaxLength(30)]
+        public string FirstName { get; set; } = "";
+
+        [Required, MinLength(2), MaxLength(30)]
+        public string LastName { get; set; } = "";
+
         [Required, MinLength(10), MaxLength(128)]
         public string Email { get; set; } = "";
 
@@ -35,6 +41,8 @@ namespace MyCampusData.Models
         {
             Username = "";
             Password = "";
+            FirstName = "";
+            LastName = "";
             Email = "";
             PhoneNumber  = "";
             Country = "";

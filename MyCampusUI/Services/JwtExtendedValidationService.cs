@@ -10,6 +10,7 @@ using System.Text;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
+using MyCampusData.Enums;
 
 namespace MyCampusUI.Services
 {
@@ -77,11 +78,13 @@ namespace MyCampusUI.Services
                     SessionEntity? session = await dbContext.Sessions.FindAsync(new Guid(sessionIdClaim));
                     if (session != null && session.User != null)
                     {
-                        if (session.ExpireAt > DateTime.Now)
+                        if (session.ExpireAt > DateTime.Now && session.User.Permissions > UserPermissionsEnum.WaitingApproval)
                         {
                             context.HttpContext.Items[nameof(session.User.Id)] = session.User.Id.ToString();
                             context.HttpContext.Items[nameof(session.User.Permissions)] = session.User.Permissions;
                             context.HttpContext.Items[nameof(session.User.Username)] = session.User.Username;
+                            context.HttpContext.Items["SessionId"] = session.Id.ToString();
+                            context.HttpContext.Items["DisposedUserEntity"] = session.User;
                             context.Success();
                             return;
                         }

@@ -1,7 +1,101 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+@inject IAuthenticationStateService authenticationState
+@inject IDbContextFactory<CampusContext> campusContextFactory
 
-<h1>Hello, world!</h1>
+<h1 class="text-center mb-5">
+    @DayStateGreet, @authenticationState.DisposedUserEntity?.FirstName @authenticationState.DisposedUserEntity?.LastName
+</h1>
 
-Welcome to your new app.
+<div class="container mb-5">
+    <h2 class="mb-4">הקורסים שלי</h2>
+
+    @if(courses != null)
+    {
+        if (courses.Count > 0)
+        {
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @foreach (var course in courses)
+                {
+                    <div class="col-lg-4 mb-3 d-flex align-items-stretch">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">@course.Name</h5>
+                                <p class="card-text">@course.Description</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <h4 class="text-muted">כרגע ניראה שאין קורסים משויכים</h4>
+        }
+    }
+</div>
+
+<div class="container mb-5">
+    <h2 class="mb-4">המפגשים הקרובים</h2>
+
+    @if(meetings != null)
+    {
+        if (meetings.Count > 0)
+        {
+            <MeetingsCarouselSlider Meetings="meetings" />
+        }
+        else
+        {
+            <h4 class="text-muted">אין מפגשים קרובים</h4>
+        }
+    }
+</div>
+
+@code {
+    private string? DayStateGreet;
+
+    private List<CourseEntity>? courses;
+    private List<(CourseMeetingEntity meeting, CourseEntity course, UserEntity lecturer)>? meetings;
+
+    protected override void OnInitialized()
+    {
+        var currentHour = DateTime.Now.Hour;
+        if(currentHour >= 23 || currentHour < 5)
+        {
+            DayStateGreet = "לילה טוב";
+        }
+        else if(currentHour >= 5 && currentHour < 12)
+        {
+            DayStateGreet = "בוקר טוב";
+        }
+        else if(currentHour >= 12 && currentHour < 17)
+        {
+            DayStateGreet = "צהריים טובים";
+        }
+        else
+        {
+            DayStateGreet = "ערב טוב";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.UserId != null)
+            {
+                var user = await dbContext.Users.FindAsync(new Guid(authenticationState.UserId));
+                if(user != null)
+                {
+                    courses = await (from userCourse in user.Courses select userCourse.Course).ToAsyncEnumerable().ToListAsync();
+                    var currentTime = DateTime.Now;
+                    meetings = await (from course in courses
+                                      from meeting in dbContext.CourseMeetings
+                                      where course.Id == meeting.CourseId && meeting.StartAt > currentTime
+                                      orderby meeting.StartAt ascending
+                                      select (meeting, meeting.Course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
+                }
+            }
+        }
+    }
+}

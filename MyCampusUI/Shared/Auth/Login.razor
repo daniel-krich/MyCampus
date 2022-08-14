@@ -25,8 +25,10 @@
         התחברות
     </button>
 </EditForm>
+<DismissibleAlert Message="@errorMessage" Classes="alert-warning shadow-sm"/>
 
 @code {
+    private ItemRef<string> errorMessage = new("");
     private LoginModel login = new();
     private bool inAction;
     private async Task SubmitAsync()
@@ -34,14 +36,20 @@
         if (!inAction)
         {
             inAction = true;
-            CookieModel cookie = await authService.CreateJwtSessionToken(login.Username, login.Password, login.RememberUser);
-            if (cookie.IsSuccess && cookie.Token != null)
+            try
             {
+                CookieModel cookie = await authService.CreateJwtSessionToken(login.Username, login.Password, login.RememberUser);
                 await jsRuntime.WriteCookie(CookiesConst.AccessCookie, cookie.Token, cookie.ExpireAt);
                 navManager.NavigateTo("/", true);
             }
-            else
+            catch (UnapprovedUserException)
             {
+                errorMessage.Item = "המשתמש טרם אושר בידי הנהלת הקמפוס";
+                inAction = false;
+            }
+            catch(InvalidCredentialsException)
+            {
+                errorMessage.Item = "המשתמש או הסיסמה אינם נכונים";
                 inAction = false;
             }
         }

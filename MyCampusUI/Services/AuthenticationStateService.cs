@@ -9,6 +9,7 @@ using MyCampusUI.Interfaces.Services;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using MyCampusUI.Exceptions;
 
 namespace MyCampusUI.Services;
 
@@ -19,9 +20,11 @@ public class AuthenticationStateService : IAuthenticationStateService
     private readonly ITokenService _tokenService;
 
     public bool IsAuthenticated { get => _httpcontext.HttpContext?.User.Identity?.IsAuthenticated ?? false; }
+    public string? SessionId { get => _httpcontext.HttpContext?.Items["SessionId"]?.ToString(); }
     public string? UserId { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Id)]?.ToString(); }
     public UserPermissionsEnum? UserPermissions { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Permissions)] as UserPermissionsEnum?; }
     public string? Username { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Username)]?.ToString(); }
+    public UserEntity? DisposedUserEntity { get => _httpcontext.HttpContext?.Items["DisposedUserEntity"] as UserEntity; }
 
     public AuthenticationStateService(IDbContextFactory<CampusContext> campusContextFactory, IHttpContextAccessor httpcontext, ITokenService tokenService)
     {
@@ -42,28 +45,23 @@ public class AuthenticationStateService : IAuthenticationStateService
                 byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
                 if (user.PasswordHash.SequenceEqual(hash))
                 {
-                    try
+                    if(user.Permissions == UserPermissionsEnum.WaitingApproval) throw new UnapprovedUserException();
+
+                    SessionEntity session = new SessionEntity
                     {
-                        SessionEntity session = new SessionEntity
-                        {
-                            User = user,
-                            ExpireAt = remember ? DateTime.Now.Add(CookiesConst.AccessCookieExpire) : DateTime.Now.Add(CookiesConst.AccessCookieExpireTemp)
-                        };
-                        dbContext.Sessions.Add(session);
-                        await dbContext.SaveChangesAsync();
-                        var accessToken = _tokenService.GenerateAccessToken(new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Sid, session.Id.ToString())
-                        }, session.ExpireAt);
-                        return new CookieModel(accessToken, session.ExpireAt);
-                    }
-                    catch
+                        User = user,
+                        ExpireAt = remember ? DateTime.Now.Add(CookiesConst.AccessCookieExpire) : DateTime.Now.Add(CookiesConst.AccessCookieExpireTemp)
+                    };
+                    dbContext.Sessions.Add(session);
+                    await dbContext.SaveChangesAsync();
+                    var accessToken = _tokenService.GenerateAccessToken(new List<Claim>
                     {
-                        return new CookieModel(false);
-                    }
+                        new Claim(ClaimTypes.Sid, session.Id.ToString())
+                    }, session.ExpireAt);
+                    return new CookieModel(accessToken, session.ExpireAt);
                 }
             }
-            return new CookieModel(false);
+            throw new InvalidCredentialsException();
         }
     }
 }

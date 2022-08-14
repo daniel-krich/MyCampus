@@ -3,7 +3,7 @@
 
 <div class="top-row ps-3 navbar navbar-dark bg-dark bg-gradient">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">@authenticationState.Username</a>
+        <a class="navbar-brand" href="">הקמפוס שלי</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -14,31 +14,54 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
+                <i class="fa-solid fa-house ms-2"></i> ראשי
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="student/meetings">
+                <i class="fa-solid fa-tv ms-2"></i> מפגשים
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            <NavLink class="nav-link" href="student/assignments">
+                <i class="fa-solid fa-clipboard-list ms-2"></i> משימות
+            </NavLink>
+        </div>
+         <div class="nav-item px-3">
+            <NavLink class="nav-link" href="student/exams">
+                <i class="fa-solid fa-graduation-cap ms-2"></i> מבחנים
             </NavLink>
         </div>
         @if (authenticationState.UserPermissions == UserPermissionsEnum.Staff)
         {
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="admin">
-                    <span class="oi oi-command" aria-hidden="true"></span> Admin
+                <NavLink class="nav-link" href="staff">
+                    <i class="fa-solid fa-gears ms-2"></i> ניהול משתמשים וקורסים
                 </NavLink>
             </div>
         }
+        else if(authenticationState.UserPermissions == UserPermissionsEnum.Lecturer)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="lecturer">
+                    <i class="fa-solid fa-user-gear ms-2"></i> ניהול כיתות
+                </NavLink>
+            </div>
+        }
+        <div class="nav-item px-3">
+            <NavLink role="button" class="nav-link" @onclick=@(() => logout = true)>
+                @if(logout)
+                {
+                    <Logout />
+                }
+                <i class="fa-solid fa-right-from-bracket ms-2"></i> התנתק
+            </NavLink>
+        </div>
     </nav>
 </div>
 
 @code {
+    private bool logout;
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;

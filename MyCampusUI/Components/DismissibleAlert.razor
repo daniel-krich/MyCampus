@@ -1,0 +1,33 @@
+﻿@implements IDisposable
+
+@if(Message?.Item?.Length > 0)
+{
+    <div>
+        <div class="@($"alert {Classes} alert-dismissible")" role="alert">
+            @Message.Item
+            <button type="button" @onclick=@(() => Message.Item = "") class="btn-close"></button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public ItemRef<string>? Message { get; set; }
+    [Parameter] public string? Classes { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if(Message != null)
+            Message.ItemChanged += OnMessageChanged;
+    }
+
+    private void OnMessageChanged(object? sender, EventArgs args)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if(Message != null)
+            Message.ItemChanged -= OnMessageChanged;
+    }
+}

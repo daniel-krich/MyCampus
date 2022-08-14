@@ -69,3 +69,9 @@ main {
         padding-right: 1.5rem !important;
     }
 }
+
+.copyright-link {
+    outline: none;
+    color: #212121;
+    text-decoration: none;
+}

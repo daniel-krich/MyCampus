@@ -1,0 +1,62 @@
+﻿<div class="carousel carousel-dark shadow-lg slide">
+    <div class="carousel-inner">
+        <div class="carousel-item d-flex flex-column justify-content-center align-items-center bg-light p-5">
+            <div class="row justify-content-center">
+                <p class="h2 text-center">@Meetings[currentIndex].course.Name</p>
+                <p class="h5 text-center mb-4">@Meetings[currentIndex].meeting.Title</p>
+                <p class="h5">מתחיל ב-@Meetings[currentIndex].meeting.StartAt.ToShortDateString() @Meetings[currentIndex].meeting.StartAt.ToShortTimeString()</p>
+                <p class="h6 text-muted mb-4">מרצה: @(Meetings[currentIndex].lecturer.FirstName + " " + @Meetings[currentIndex].lecturer.LastName)</p>
+                <div class="row justify-content-center">
+                    <a role="button" class="btn btn-outline-primary btn-sm p-2 w-auto" target="_blank" href="@Meetings[currentIndex].meeting.MeetingUrl">הצטרפות למפגש</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev w-auto" @onclick="@OnClickPrev" type="button">
+    <span class="carousel-control-prev-icon"></span>
+    <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next w-auto" @onclick="@OnClickNext" type="button">
+    <span class="carousel-control-next-icon"></span>
+    <span class="visually-hidden">Next</span>
+    </button>
+</div>
+<div class="d-flex justify-content-center flex-row-reverse mt-3">
+    @for(int i = 0; i < Meetings.Count; i++)
+    {
+        int currIndx = i;
+        if(i == currentIndex)
+        {
+            <i role="button" class="fa-solid fa-circle me-2"></i>
+        }
+        else
+        {
+            <i role="button" class="fa-solid fa-circle-dot me-2" @onclick="@(() => OnSelectExactIndex(currIndx))"></i>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public List<(CourseMeetingEntity meeting, CourseEntity course, UserEntity lecturer)> Meetings { get; set; }
+
+    private int currentIndex;
+
+    private void OnClickPrev()
+    {
+        currentIndex--;
+        if (currentIndex < 0)
+            currentIndex = Meetings.Count - 1;
+    }
+
+    private void OnClickNext()
+    {
+        currentIndex++;
+        if (currentIndex >= Meetings.Count)
+            currentIndex = 0;
+    }
+
+    private void OnSelectExactIndex(int index)
+    {
+        currentIndex = index;
+    }
+}

@@ -7,14 +7,15 @@ namespace MyCampusUI.Components
     {
         [Parameter] public string? Route { get; set; }
         [Parameter] public bool Reload { get; set; }
-
-        [Inject] public NavigationManager? NavManager { get; set; }
+#nullable disable
+        [Inject] public NavigationManager NavManager { get; set; }
+#nullable enable
 
         protected override void OnAfterRender(bool firstRender)
         {
             if (firstRender && Route != null)
             {
-                NavManager?.NavigateTo(Route, Reload);
+                NavManager.NavigateTo(Route, Reload);
             }
         }
     }

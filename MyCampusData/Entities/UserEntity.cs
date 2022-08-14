@@ -25,6 +25,12 @@ namespace MyCampusData.Entities
         public virtual ICollection<CourseEntity> LecturingCourses { get; set; }
         public virtual ICollection<SessionEntity> Sessions { get; set; }
 
+        [Required, MaxLength(30)]
+        public string FirstName { get; set; }
+
+        [Required, MaxLength(30)]
+        public string LastName { get; set; }
+
         [Required, MaxLength(128)]
         public string Email { get; set; }
 

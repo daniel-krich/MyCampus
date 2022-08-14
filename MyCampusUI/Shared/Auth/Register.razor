@@ -14,6 +14,16 @@
     </div>
     <div class="row mb-3">
         <div class="col">
+            <label for="firstnameInput" class="form-label">שם פרטי</label>
+            <input type="text" class="form-control" @bind="@register.FirstName" id="firstnameInput" minlength="2" maxlength="30" required>
+        </div>
+        <div class="col">
+            <label for="lastnameInput" class="form-label">שם משפחה</label>
+            <input type="text" class="form-control" @bind="@register.LastName" id="lastnameInput" minlength="2" maxlength="30" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
             <label for="emailInput" class="form-label">דוא"ל</label>
             <input type="email" class="form-control" @bind="@register.Email" id="emailInput" minlength="10" maxlength="128" required>
         </div>
@@ -49,8 +59,12 @@
         הרשמה
     </button>
 </EditForm>
+<DismissibleAlert Message="@errorMessage" Classes="alert-warning shadow-sm"/>
+<DismissibleAlert Message="@successMessage" Classes="alert-success shadow-sm"/>
 
 @code {
+    private ItemRef<string> errorMessage = new("");
+    private ItemRef<string> successMessage = new("");
     private RegisterModel register = new();
     private bool inAction;
     private async Task SubmitAsync()
@@ -69,6 +83,8 @@
                             Username = register.Username,
                             PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password)),
                             PasswordSalt = hmac.Key,
+                            FirstName = register.FirstName,
+                            LastName = register.LastName,
                             Email = register.Email,
                             PhoneNumber = register.PhoneNumber,
                             Country = register.Country,
@@ -79,10 +95,14 @@
 
                     dbContext.Users.Add(user);
                     await dbContext.SaveChangesAsync();
+                    errorMessage.Item = "";
+                    successMessage.Item = "המשתמש נוצר בהצלחה, נותר רק לחכות לאישור הנהלת הקמפוס";
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex);
+                    successMessage.Item = "";
+                    errorMessage.Item = "אירעה שגיאה, יכול להיות שיש כבר משתמש עם אותם פרטים";
                 }
             }
             inAction = false;
