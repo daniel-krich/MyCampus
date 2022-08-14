@@ -1,4 +1,5 @@
-﻿using MyCampusData.Models;
+﻿using MyCampusData.Enums;
+using MyCampusData.Models;
 
 namespace MyCampusUI.Interfaces.Services
 {
@@ -6,6 +7,8 @@ namespace MyCampusUI.Interfaces.Services
     {
         bool IsAuthenticated { get; }
         string? UserId { get; }
+        UserPermissionsEnum? UserPermissions { get; }
+        string? Username { get; }
         Task<CookieModel> CreateJwtSessionToken(string username, string password, bool remember);
     }
 }

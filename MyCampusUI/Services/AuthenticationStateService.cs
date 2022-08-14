@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyCampusData.Data;
 using MyCampusData.Entities;
 using MyCampusData.Models;
+using MyCampusData.Enums;
 using MyCampusUI.Consts;
 using MyCampusUI.Interfaces.Services;
 using System.Security.Claims;
@@ -18,7 +19,9 @@ public class AuthenticationStateService : IAuthenticationStateService
     private readonly ITokenService _tokenService;
 
     public bool IsAuthenticated { get => _httpcontext.HttpContext?.User.Identity?.IsAuthenticated ?? false; }
-    public string? UserId { get => _httpcontext.HttpContext!.Items["UserId"]?.ToString(); }
+    public string? UserId { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Id)]?.ToString(); }
+    public UserPermissionsEnum? UserPermissions { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Permissions)] as UserPermissionsEnum?; }
+    public string? Username { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Username)]?.ToString(); }
 
     public AuthenticationStateService(IDbContextFactory<CampusContext> campusContextFactory, IHttpContextAccessor httpcontext, ITokenService tokenService)
     {
