@@ -41,42 +41,52 @@
         <label class="form-check-label" for="confirmInput">אני מסכים לכל תנאי השימוש</label>
         <input type="checkbox" class="form-check-input float-end ms-2" id="confirmInput" required>
     </div>
-    <button type="submit" class="btn btn-primary rounded-pill w-100 mt-3 mb-3">הרשמה</button>
+    <button type="submit" disabled="@inAction" class="btn btn-primary rounded-pill w-100 mt-3 mb-3">
+        @if (inAction)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        הרשמה
+    </button>
 </EditForm>
 
 @code {
     private RegisterModel register = new();
+    private bool inAction;
     private async Task SubmitAsync()
     {
-        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        if (!inAction)
         {
-            try
+            inAction = true;
+            using (var dbContext = await campusContextFactory.CreateDbContextAsync())
             {
-                using var hmac = new HMACSHA512();
+                try
+                {
+                    using var hmac = new HMACSHA512();
 
-                UserEntity user = new UserEntity
-                    {
-                        Username = register.Username,
-                        PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password)),
-                        PasswordSalt = hmac.Key,
-                        Email = register.Email,
-                        PhoneNumber = register.PhoneNumber,
-                        Country = register.Country,
-                        City = register.City,
-                        Gender = register.Gender ?? GenderEnum.Other,
-                        Permissions = UserPermissionsEnum.WaitingApproval
-                    };
+                    UserEntity user = new UserEntity
+                        {
+                            Username = register.Username,
+                            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password)),
+                            PasswordSalt = hmac.Key,
+                            Email = register.Email,
+                            PhoneNumber = register.PhoneNumber,
+                            Country = register.Country,
+                            City = register.City,
+                            Gender = register.Gender ?? GenderEnum.Other,
+                            Permissions = UserPermissionsEnum.WaitingApproval
+                        };
 
-                dbContext.Users.Add(user);
-                await dbContext.SaveChangesAsync();
-
-                Trace.WriteLine(JsonSerializer.Serialize(user));
-                Trace.WriteLine("Success");
+                    dbContext.Users.Add(user);
+                    await dbContext.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
-            catch(Exception ex)
-            {
-                Trace.WriteLine(ex);
-            }
+            inAction = false;
+            StateHasChanged();
         }
     }
 }

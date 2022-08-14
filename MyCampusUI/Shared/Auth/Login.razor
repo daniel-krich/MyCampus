@@ -17,22 +17,33 @@
         <label class="form-check-label" for="rememberInput">זכור אותי</label>
         <input type="checkbox" class="form-check-input float-end ms-2" @bind="login.RememberUser" id="rememberInput">
     </div>
-    <button type="submit" class="btn btn-primary rounded-pill w-100 mt-3 mb-3">התחברות</button>
+    <button type="submit" disabled="@inAction" class="btn btn-primary rounded-pill w-100 mt-3 mb-3">
+        @if (inAction)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        התחברות
+    </button>
 </EditForm>
 
 @code {
     private LoginModel login = new();
+    private bool inAction;
     private async Task SubmitAsync()
     {
-        CookieModel cookie = await authService.CreateJwtSessionToken(login.Username, login.Password, login.RememberUser);
-        if(cookie.IsSuccess && cookie.Token != null)
+        if (!inAction)
         {
-            await jsRuntime.WriteCookie(CookiesConst.AccessCookie, cookie.Token, cookie.ExpireAt);
-            navManager.NavigateTo("/", true);
-        }
-        else
-        {
-            // failed login.
+            inAction = true;
+            CookieModel cookie = await authService.CreateJwtSessionToken(login.Username, login.Password, login.RememberUser);
+            if (cookie.IsSuccess && cookie.Token != null)
+            {
+                await jsRuntime.WriteCookie(CookiesConst.AccessCookie, cookie.Token, cookie.ExpireAt);
+                navManager.NavigateTo("/", true);
+            }
+            else
+            {
+                inAction = false;
+            }
         }
     }
 }
