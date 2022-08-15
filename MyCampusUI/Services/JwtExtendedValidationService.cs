@@ -80,10 +80,7 @@ namespace MyCampusUI.Services
                     {
                         if (session.ExpireAt > DateTime.Now && session.User.Permissions > UserPermissionsEnum.WaitingApproval)
                         {
-                            context.HttpContext.Items[nameof(session.User.Id)] = session.User.Id.ToString();
-                            context.HttpContext.Items[nameof(session.User.Permissions)] = session.User.Permissions;
-                            context.HttpContext.Items[nameof(session.User.Username)] = session.User.Username;
-                            context.HttpContext.Items["SessionId"] = session.Id.ToString();
+                            context.HttpContext.Items["SessionId"] = session.Id;
                             context.HttpContext.Items["DisposedUserEntity"] = session.User;
                             context.Success();
                             return;

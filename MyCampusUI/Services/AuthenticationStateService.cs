@@ -20,11 +20,16 @@ public class AuthenticationStateService : IAuthenticationStateService
     private readonly ITokenService _tokenService;
 
     public bool IsAuthenticated { get => _httpcontext.HttpContext?.User.Identity?.IsAuthenticated ?? false; }
-    public string? SessionId { get => _httpcontext.HttpContext?.Items["SessionId"]?.ToString(); }
-    public string? UserId { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Id)]?.ToString(); }
-    public UserPermissionsEnum? UserPermissions { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Permissions)] as UserPermissionsEnum?; }
-    public string? Username { get => _httpcontext.HttpContext?.Items[nameof(UserEntity.Username)]?.ToString(); }
-    public UserEntity? DisposedUserEntity { get => _httpcontext.HttpContext?.Items["DisposedUserEntity"] as UserEntity; }
+    public Guid? SessionId { get => _httpcontext.HttpContext?.Items["SessionId"] as Guid?; }
+
+    public UserEntity? DisposedUserEntity {
+        get => _httpcontext.HttpContext?.Items["DisposedUserEntity"] as UserEntity;
+        set
+        {
+            if (_httpcontext.HttpContext != null)
+                _httpcontext.HttpContext.Items["DisposedUserEntity"] = value;
+        }
+    }
 
     public AuthenticationStateService(IDbContextFactory<CampusContext> campusContextFactory, IHttpContextAccessor httpcontext, ITokenService tokenService)
     {

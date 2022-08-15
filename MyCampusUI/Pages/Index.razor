@@ -14,14 +14,17 @@
     {
         if (courses.Count > 0)
         {
-            <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
                 @foreach (var course in courses)
                 {
                     <div class="col-lg-4 mb-3 d-flex align-items-stretch">
-                        <div class="card">
+                        <div class="card shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title">@course.Name</h5>
-                                <p class="card-text">@course.Description</p>
+                                <p class="card-title h4 mb-2">@course.course.Name</p>
+                                <div class="card-text">
+                                    <p class="h6 text-muted mb-3">@course.course.Description</p>
+                                    <p class="">מרצה קבוע: @(course.lecturer != null ? (course.lecturer.FirstName + "" + course.lecturer.LastName) : "לא שובץ")</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -54,7 +57,7 @@
 @code {
     private string? DayStateGreet;
 
-    private List<CourseEntity>? courses;
+    private List<(CourseEntity course, UserEntity? lecturer)>? courses;
     private List<(CourseMeetingEntity meeting, CourseEntity course, UserEntity lecturer)>? meetings;
 
     protected override void OnInitialized()
@@ -82,16 +85,16 @@
     {
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.UserId != null)
+            if (authenticationState.DisposedUserEntity?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(new Guid(authenticationState.UserId));
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
-                    courses = await (from userCourse in user.Courses select userCourse.Course).ToAsyncEnumerable().ToListAsync();
+                    courses = await (from userCourse in user.Courses select (userCourse.Course, userCourse.Course.Lecturer)).ToAsyncEnumerable().ToListAsync();
                     var currentTime = DateTime.Now;
                     meetings = await (from course in courses
                                       from meeting in dbContext.CourseMeetings
-                                      where course.Id == meeting.CourseId && meeting.StartAt > currentTime
+                                      where course.course.Id == meeting.CourseId && (meeting.StartAt > currentTime || meeting.StartAt.Subtract(currentTime) < TimeSpan.FromHours(2))
                                       orderby meeting.StartAt ascending
                                       select (meeting, meeting.Course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
                 }

@@ -1,0 +1,155 @@
+﻿@page "/profile"
+
+@inject IAuthenticationStateService authenticationState
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<div class="d-flex flex-row justify-content-center">
+    <div class="profile-box">
+        <p class="h3 text-muted text-center mt-3 mb-3">עדכון פרטי משתמש</p>
+        <EditForm Context="RegisterContext" OnValidSubmit="@SubmitAsync" Model="this.updateProfile">
+            <DataAnnotationsValidator />
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="curpasswordInput" class="form-label">סיסמה נוכחית</label>
+                    <input type="password" class="form-control" @bind="@updateProfile.CurrentPassword" id="curpasswordInput" minlength="8" maxlength="30">
+                </div>
+                <div class="col">
+                    <label for="newpasswordInput" class="form-label">סיסמה חדשה</label>
+                    <input type="password" class="form-control" @bind="@updateProfile.NewPassword" id="newpasswordInput" minlength="8" maxlength="30">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="firstnameInput" class="form-label">שם פרטי</label>
+                    <input type="text" class="form-control" @bind="@updateProfile.FirstName" id="firstnameInput" minlength="2" maxlength="30" required>
+                </div>
+                <div class="col">
+                    <label for="lastnameInput" class="form-label">שם משפחה</label>
+                    <input type="text" class="form-control" @bind="@updateProfile.LastName" id="lastnameInput" minlength="2" maxlength="30" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="emailInput" class="form-label">דוא"ל</label>
+                    <input type="email" class="form-control" @bind="@updateProfile.Email" id="emailInput" minlength="10" maxlength="128" required>
+                </div>
+                <div class="col">
+                    <label for="phoneInput" class="form-label">מספר טלפון</label>
+                    <input type="tel" class="form-control" @bind="@updateProfile.PhoneNumber" id="phoneInput" minlength="10" maxlength="16" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="cityInput" class="form-label">עיר</label>
+                    <input type="text" class="form-control" @bind="@updateProfile.City" id="cityInput" minlength="5" maxlength="32" required>
+                </div>
+                <div class="col">
+                    <label for="genderSelect" class="form-label">מין</label>
+                    <InputSelect id="genderSelect" class="form-select" @bind-Value="@updateProfile.Gender" required>
+                      <option selected></option>
+                      <option value="@(nameof(GenderEnum.Male))">זכר</option>
+                      <option value="@(nameof(GenderEnum.Female))">נקבה</option>
+                      <option value="@(nameof(GenderEnum.Other))">אחר</option>
+                    </InputSelect>
+                </div>
+            </div>
+            <button type="submit" disabled="@inAction" class="btn btn-outline-secondary rounded-pill w-100 mt-3 mb-3">
+                @if (inAction)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
+                עדכון פרטים
+            </button>
+        </EditForm>
+        <DismissibleAlert Message="@errorMessage" Classes="alert-warning m-2 shadow-sm"/>
+        <DismissibleAlert Message="@successMessage" Classes="alert-success m-2 shadow-sm"/>
+    </div>
+</div>
+
+@code {
+    private UpdateProfileModel updateProfile = new();
+    private ItemRef<string> errorMessage = new("");
+    private ItemRef<string> successMessage = new("");
+    private bool inAction;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    updateProfile.FirstName = user.FirstName;
+                    updateProfile.LastName = user.LastName;
+                    updateProfile.Email = user.Email;
+                    updateProfile.PhoneNumber = user.PhoneNumber;
+                    updateProfile.City = user.City;
+                    updateProfile.Gender = user.Gender;
+                }
+            }
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            inAction = true;
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    try
+                    {
+                        if (updateProfile.CurrentPassword.Length >= 8 && updateProfile.NewPassword.Length >= 8)
+                        {
+                            var salt = user.PasswordSalt;
+                            using HMACSHA512 hmac = new HMACSHA512(salt);
+                            byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(updateProfile.CurrentPassword));
+                            if (user.PasswordHash.SequenceEqual(hash))
+                            {
+                                byte[] newHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(updateProfile.NewPassword));
+                                user.PasswordHash = newHash;
+
+                                if(authenticationState.DisposedUserEntity != null && authenticationState.SessionId != null)
+                                {
+                                    await dbContext.Sessions.Where(x => x.UserId == authenticationState.DisposedUserEntity.Id && x.Id != authenticationState.SessionId)
+                                                      .ToAsyncEnumerable()
+                                                      .ForEachAsync(x => dbContext.Sessions.Remove(x));
+                                }
+                            }
+                            else
+                            {
+                                successMessage.Item = "";
+                                errorMessage.Item = "הסיסמה הנוכחית אינה נכונה";
+                                inAction = false;
+                                return;
+                            }
+                        }
+                        user.FirstName = updateProfile.FirstName;
+                        user.LastName = updateProfile.LastName;
+                        user.Email = updateProfile.Email;
+                        user.PhoneNumber = updateProfile.PhoneNumber;
+                        user.City = updateProfile.City;
+                        user.Gender = updateProfile.Gender ?? GenderEnum.Other;
+                        dbContext.Users.Update(user);
+                        await dbContext.SaveChangesAsync();
+                        errorMessage.Item = "";
+                        successMessage.Item = "שינוי הפרטים עבר בהצלחה";
+
+                        authenticationState.DisposedUserEntity = user; // update account state
+                    }
+                    catch
+                    {
+                        successMessage.Item = "";
+                        errorMessage.Item = "אירעה שגיאה, יכול להיות שיש כבר משתמש עם אותו דוא\"ל";
+                    }
+                }
+            }
+            inAction = false;
+        }
+    }
+}

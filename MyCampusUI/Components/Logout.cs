@@ -25,15 +25,12 @@ namespace MyCampusUI.Components
             {
                 using (var dbContext = await DbContextFactory.CreateDbContextAsync())
                 {
-                    try
+                    var result = await dbContext.Sessions.FindAsync(AuthService.SessionId);
+                    if (result != null)
                     {
-                        dbContext.Sessions.Remove(new SessionEntity
-                        {
-                            Id = new Guid(AuthService.SessionId)
-                        });
+                        dbContext.Sessions.Remove(result);
                         await dbContext.SaveChangesAsync();
                     }
-                    catch { }
                     await JsRuntime.DeleteCookie(CookiesConst.AccessCookie);
                     NavManager.NavigateTo("/", true);
                 }

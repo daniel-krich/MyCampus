@@ -1,0 +1,15 @@
+﻿.profile-box {
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 0px 10px #21212180;
+    border-radius: 10px;
+    width: 100%;
+    margin: 0px 50px 0px 50px
+}
+::deep form {
+    padding: 30px;
+}
+
+::deep input {
+    direction: ltr;
+}
