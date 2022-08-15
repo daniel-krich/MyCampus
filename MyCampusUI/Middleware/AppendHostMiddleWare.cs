@@ -1,10 +1,10 @@
 ﻿namespace MyCampusUI.Middleware;
 
-public class AddMissingHeadersMiddleWare
+public class AppendHostMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public AddMissingHeadersMiddleWare(RequestDelegate next)
+    public AppendHostMiddleware(RequestDelegate next)
     {
         _next = next;
     }

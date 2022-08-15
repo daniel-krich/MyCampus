@@ -7,6 +7,7 @@ using MyCampusData.Data;
 using MyCampusUI.Services;
 using MyCampusUI.Data;
 using MyCampusUI.Interfaces.Services;
+using MyCampusUI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,8 +42,9 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseRouting();
+app.UseMiddleware<AppendHostMiddleware>();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
