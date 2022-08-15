@@ -1,7 +1,112 @@
 ﻿@page "/student/meetings"
+@page "/student/meetings/{PageId:int}"
 
-<h3>StudentMeetings</h3>
+@inject IAuthenticationStateService authenticationState
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<div class="container mb-5">
+    <h2 class="mb-4">כל המפגשים</h2>
+
+    @if(meetings != null)
+    {
+        @if (meetings.Count > 0)
+        {
+            
+            var numFrom = PageId <= 1 ? 1 : (PageId - 1) * meetingsPerPage;
+            var numTo = (PageId * meetingsPerPage) > meetingsCount ? meetingsCount : (PageId * meetingsPerPage);
+            
+            <p>מציג @numFrom ועד @numTo מתוך @meetingsCount תוצאות</p>
+            <div class="container">
+                @foreach(var meeting in meetings)
+                {
+                    <div class="col-12 mb-3 mb-lg-0 mt-4">
+                        <div class="card p-4">
+                            <div class="row align-items-center">
+                                <div class="col-lg-5 d-flex flex-column force-padding-all">
+                                    <p class="h5">@meeting.course.Name</p>
+                                    <p class="h6">@meeting.meeting.Title</p>
+                                    <p class="h6 mt-3">מרצה: @(meeting.lecturer.FirstName + " " + meeting.lecturer.LastName)</p>
+                                </div>
+                        
+                                <div class="col-lg-4">
+                                    <p class="h6 text-muted">תאריך הפגישה: @meeting.meeting.StartAt.ToLongDateHebrewString()</p>
+                                </div>
+
+                                <div class="col-lg-3 d-flex justify-content-center align-content-center">
+                                    @{ var isMeetingOver = DateTime.Now.Subtract(meeting.meeting.StartAt) > TimeSpan.FromHours(6); }
+                                    <a role="button" class="btn btn-outline-dark w-100"
+                                        disabled="@(isMeetingOver)"
+                                        target="_blank" href="@meeting.meeting.MeetingUrl">
+                                        @if(isMeetingOver)
+                                        {
+                                            <span>הפגישה הסתיימה</span>
+                                        }
+                                        else
+                                        {
+                                            <span>הצטרפות למפגש</span>
+                                        }
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <nav class="d-flex justify-content-center mt-4">
+                    <Pagination MeetingsPerPage="@meetingsPerPage" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
+                </nav>
+            </div>
+        }
+        else
+        {
+            <h4 class="text-muted">לא נמצאו מפגשים</h4>
+        }
+    }
+</div>
 
 @code {
+    private List<(CourseMeetingEntity meeting, CourseEntity course, UserEntity lecturer)>? meetings;
 
+    public ItemRef<long> CurrentPageItem { get; set; } = new(1);
+    public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
+
+    private int meetingsPerPage = 10;
+    private int pagesBufferRange = 5;
+
+    private long meetingsPages;
+    private long meetingsCount;
+
+    [Parameter] public int PageId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageId = PageId <= 0 ? 1 : PageId;
+        CurrentPageItem.Item = PageId;
+
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    meetingsCount = await (from course in user.Courses
+                                                from meeting in dbContext.CourseMeetings
+                                                where course.CourseId == meeting.CourseId
+                                                orderby meeting.StartAt descending
+                                                select meeting).ToAsyncEnumerable().LongCountAsync();
+                    meetingsPages = Convert.ToInt64(Math.Ceiling((double)meetingsCount / meetingsPerPage));
+                    CurrentPagesCountItem.Item = meetingsPages;
+
+                    var courses = await (from userCourse in user.Courses select (userCourse.Course, userCourse.Course.Lecturer)).ToAsyncEnumerable().ToListAsync();
+                    var currentTime = DateTime.Now;
+                    meetings = await (from course in user.Courses
+                                      from meeting in dbContext.CourseMeetings
+                                      where course.CourseId == meeting.CourseId
+                                      orderby meeting.StartAt descending
+                                      select (meeting, meeting.Course, meeting.Lecturer)).Skip((PageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToAsyncEnumerable().ToListAsync();
+                }
+            }
+        }
+        CurrentPageItem.Item = PageId;
+    }
 }

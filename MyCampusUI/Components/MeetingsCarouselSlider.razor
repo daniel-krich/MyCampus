@@ -4,10 +4,10 @@
             <div class="row justify-content-around w-100">
                 <p class="h2 text-center">@Meetings[currentIndex].course.Name</p>
                 <p class="h5 text-center mb-4">@Meetings[currentIndex].meeting.Title</p>
-                <p class="h5">מתחיל ב-@Meetings[currentIndex].meeting.StartAt.ToShortDateString() @Meetings[currentIndex].meeting.StartAt.ToShortTimeString()</p>
+                <p class="h5">מתחיל ב@(Meetings[currentIndex].meeting.StartAt.ToLongDateHebrewString())</p>
                 <p class="h6 text-muted mb-4">מרצה: @(Meetings[currentIndex].lecturer.FirstName + " " + @Meetings[currentIndex].lecturer.LastName)</p>
                 <div class="row justify-content-center">
-                    <a role="button" class="btn btn-outline-secondary btn-sm p-2 w-auto" target="_blank" href="@Meetings[currentIndex].meeting.MeetingUrl">הצטרפות למפגש</a>
+                    <a role="button" class="btn btn-outline-dark btn-sm p-2 w-auto" target="_blank" href="@Meetings[currentIndex].meeting.MeetingUrl">הצטרפות למפגש</a>
                 </div>
             </div>
         </div>

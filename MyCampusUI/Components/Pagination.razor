@@ -1,0 +1,53 @@
+﻿@implements IDisposable
+
+<ul class="pagination pagination-purple p-0">
+    <li class="@($"page-item" + (CurrentPageItem.Item == 1 ? " disabled": null))">
+        <NavLink class="page-link" href="@($"/student/meetings/{CurrentPageItem.Item-1}")">
+            <span aria-hidden="true">&laquo;</span>
+        </NavLink>
+    </li>
+    @{
+        var pagesBufferedEnd = (CurrentPageItem.Item + PagesBufferRange) > CurrentPagesCountItem.Item ? CurrentPagesCountItem.Item : (CurrentPageItem.Item + PagesBufferRange);
+        var pagesBufferedStart = (CurrentPageItem.Item - PagesBufferRange) <= 0 ? 1 : (CurrentPageItem.Item - PagesBufferRange);
+    }
+    @for(long i = pagesBufferedStart; i <= pagesBufferedEnd; i++)
+    {
+        var pageLoopIndex = i;
+        <li class="@($"page-item" + (pageLoopIndex == CurrentPageItem.Item ? " active": null))">
+            <NavLink class="page-link" href="@($"/student/meetings/{pageLoopIndex}")">
+                <span aria-hidden="true">@pageLoopIndex</span>
+            </NavLink>
+        </li>
+    }
+    <li class="@($"page-item" + (CurrentPageItem.Item == CurrentPagesCountItem.Item ? " disabled": null))">
+        <NavLink class="page-link" href="@($"/student/meetings/{CurrentPageItem.Item+1}")">
+            <span aria-hidden="true">&raquo;</span>
+        </NavLink>
+    </li>
+</ul>
+
+@code {
+    [Parameter] public int MeetingsPerPage { get; set; } = 10;
+
+    [Parameter] public int PagesBufferRange { get; set; } = 5;
+
+    [Parameter] public ItemRef<long> CurrentPageItem { get; set; } = new(1);
+    [Parameter] public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
+
+    protected override void OnInitialized()
+    {
+        CurrentPageItem.ItemChanged += OnPaginationChanged;
+        CurrentPagesCountItem.ItemChanged += OnPaginationChanged;
+    }
+
+    private void OnPaginationChanged(object? sender, EventArgs args)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        CurrentPageItem.ItemChanged -= OnPaginationChanged;
+        CurrentPagesCountItem.ItemChanged -= OnPaginationChanged;
+    }
+}

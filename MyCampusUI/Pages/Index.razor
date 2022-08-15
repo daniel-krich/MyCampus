@@ -23,7 +23,7 @@
                                 <p class="card-title h4 mb-2">@course.course.Name</p>
                                 <div class="card-text">
                                     <p class="h6 text-muted mb-3">@course.course.Description</p>
-                                    <p class="">מרצה קבוע: @(course.lecturer != null ? (course.lecturer.FirstName + "" + course.lecturer.LastName) : "לא שובץ")</p>
+                                    <p class="">מרצה ראשי: @(course.lecturer != null ? (course.lecturer.FirstName + " " + course.lecturer.LastName) : "לא שובץ")</p>
                                 </div>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
                     var currentTime = DateTime.Now;
                     meetings = await (from course in courses
                                       from meeting in dbContext.CourseMeetings
-                                      where course.course.Id == meeting.CourseId && (meeting.StartAt > currentTime || meeting.StartAt.Subtract(currentTime) < TimeSpan.FromHours(2))
+                                      where course.course.Id == meeting.CourseId && (meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2))
                                       orderby meeting.StartAt ascending
                                       select (meeting, meeting.Course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
                 }

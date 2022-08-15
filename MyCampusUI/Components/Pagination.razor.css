@@ -1,0 +1,30 @@
+﻿.pagination-purple > li > ::deep a {
+    background-color: white !important;
+    color: #303030 !important;
+}
+
+.pagination-purple > li > ::deep a:focus {
+    box-shadow: none;
+}
+
+.pagination-purple > li > ::deep a:hover {
+    background-color: #303030;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem #30303060;
+}
+
+.pagination-purple > li > span:focus,
+.pagination-purple > li > span:hover {
+    
+}
+
+.pagination-purple > .active > ::deep a {
+    color: white !important;
+    background-color: #303030 !Important;
+    border: solid 1px #303030 !Important;
+}
+
+.pagination-purple > .active > ::deep a:hover {
+    background-color: #303030 !Important;
+    border: solid 1px #303030 !important;
+}
