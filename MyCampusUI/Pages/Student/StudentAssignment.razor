@@ -5,11 +5,94 @@
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
 <div class="container mb-5">
-    <h2 class="mb-4">@AssignmentId</h2>
+    @if (assignment != null)
+    {
+        <h2 class="mb-4">משימה להגשה - @assignment.Title</h2>
+
+        <div class="row p-3">
+           <div class="col-12">
+              <div class="card shadow-sm">
+                 <div class="card-body">
+                    <div class="row">
+                       <div class="col-lg-6 border-secondary task-border-divide">
+                          <div class="task-details-section card-body">
+                             <h1 class="mb-0 text-center">פרטי המשימה</h1>
+                             <div class="mt-5">
+                                @assignment.AssignmentSource
+                             </div>
+                          </div>
+                       </div>
+                       <div class="col-lg-6">
+                          <div class="task-submission-section card-body">
+                             <div class="text-center">
+                                <h1 class="mb-3">פרטי הגשה</h1>
+                                <br>
+                                <span class="eg-task-status-3 p-2 text-white">
+                                נבדק
+                                </span>
+                             </div>
+                             <div class="mt-4">
+                                <EditForm Context="AssignmentSubmit" OnValidSubmit="@OnAssignmentSubmit" Model="this.assignmentSubmit">
+                                    <div class="form-group">
+                                       <textarea class="form-control" name="" id="" cols="30" rows="10" @bind="assignmentSubmit.SubmissionText"/>
+                                       <p class="mt-3">
+                                          הורד קובץ מוגש
+                                       </p>
+                                       <div class="form-group text-center mt-5">
+                                          <button type="submit" class="btn btn-dark mb-1">הגשה</button>
+                                       </div>
+                                    </div>
+                                </EditForm>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public Guid AssignmentId { get; set; }
+    private AssignmentSubmitModel assignmentSubmit = new();
+    private ClassAssignmentEntity? assignment;
+    private ClassAssignmentSubmissionEntity? assignmentSubmission;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    assignment = await dbContext.ClassAssignments.FindAsync(AssignmentId);
+
+                    if(assignment != null)
+                    {
+                        assignmentSubmission = await assignment.AssignmentSubmissions.ToAsyncEnumerable().FirstOrDefaultAsync(x => x.StudentId == user.Id);
+                        assignmentSubmit.SubmissionText = assignmentSubmission?.SubmissionText ?? "";
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task OnAssignmentSubmit()
+    {
+        if(assignmentSubmission != null)
+        {
+            using (var dbContext = await campusContextFactory.CreateDbContextAsync())
+            {
+                assignmentSubmission.SubmissionText = assignmentSubmit.SubmissionText;
+                dbContext.ClassAssignmentSubmissions.Update(assignmentSubmission);
+                await dbContext.SaveChangesAsync();
+            }
+        }
+    }
 }
 
 
