@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyCampusData.Data;
 
@@ -11,9 +12,10 @@ using MyCampusData.Data;
 namespace MyCampusData.Migrations
 {
     [DbContext(typeof(CampusContext))]
-    partial class CampusContextModelSnapshot : ModelSnapshot
+    [Migration("20220816112520_add_courses_table_and_classes_Table")]
+    partial class add_courses_table_and_classes_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,16 +69,11 @@ namespace MyCampusData.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Evaluation")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SubmissionFileUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SubmissionText")
                         .IsRequired()
@@ -224,9 +221,8 @@ namespace MyCampusData.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Evaluation")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<float>("Grade")
+                        .HasColumnType("real");
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");

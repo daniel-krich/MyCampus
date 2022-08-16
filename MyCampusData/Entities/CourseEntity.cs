@@ -10,17 +10,10 @@ namespace MyCampusData.Entities
     public class CourseEntity : BaseEntity
     {
 #nullable disable
-        [Required, MaxLength(56)]
+        [Required, MaxLength(128)]
         public string Name { get; set; }
-        [Required, MaxLength(256)]
+        [Required, MaxLength(255)]
         public string Description { get; set; }
-        public DateTime CourseStartAt { get; set; }
-        public DateTime CourseFinishAt { get; set; }
-        public virtual ICollection<UserCourseEntity> Students { get; set; }
-        public virtual ICollection<CourseMeetingEntity> Meetings { get; set; }
-        public virtual ICollection<CourseAssignmentEntity> Assignments { get; set; }
-#nullable enable
-        public Guid? LecturerId { get; set; }
-        public virtual UserEntity? Lecturer { get; set; }
+        public virtual ICollection<ClassEntity> Classes { get; set; }
     }
 }

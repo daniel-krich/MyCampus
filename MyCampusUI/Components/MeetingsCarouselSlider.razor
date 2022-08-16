@@ -5,7 +5,7 @@
                 <p class="h2 text-center">@Meetings[currentIndex].course.Name</p>
                 <p class="h5 text-center mb-4">@Meetings[currentIndex].meeting.Title</p>
                 <p class="h5">מתחיל ב@(Meetings[currentIndex].meeting.StartAt.ToLongDateHebrewString())</p>
-                <p class="h6 text-muted mb-4">מרצה: @(Meetings[currentIndex].lecturer.FirstName + " " + @Meetings[currentIndex].lecturer.LastName)</p>
+                <p class="h6 text-muted mb-4">מרצה: @(Meetings[currentIndex].meetingLecturer.FirstName + " " + @Meetings[currentIndex].meetingLecturer.LastName)</p>
                 <div class="row justify-content-center">
                     <a role="button" class="btn btn-outline-dark btn-sm p-2 w-auto" target="_blank" href="@Meetings[currentIndex].meeting.MeetingUrl">הצטרפות למפגש</a>
                 </div>
@@ -37,7 +37,7 @@
 </div>
 
 @code {
-    [Parameter] public List<(CourseMeetingEntity meeting, CourseEntity course, UserEntity lecturer)> Meetings { get; set; } = new();
+    [Parameter] public List<(ClassMeetingEntity meeting, ClassEntity currentClass, CourseEntity course, UserEntity meetingLecturer)> Meetings { get; set; } = new();
 
     private int currentIndex;
 

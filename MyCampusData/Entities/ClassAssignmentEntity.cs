@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace MyCampusData.Entities
 {
-    public class CourseAssignmentEntity : BaseEntity
+    public class ClassAssignmentEntity : BaseEntity
     {
 #nullable disable
         [Required]
         public string Title { get; set; }
         [Required]
         public string AssignmentSource { get; set; }
-        public Guid CourseId { get; set; }
-        public virtual CourseEntity Course { get; set; }
-        public virtual ICollection<CourseAssignmentSubmissionEntity> AssignmentSubmissions { get; set; }
+        public Guid ClassId { get; set; }
+        public virtual ClassEntity Class { get; set; }
+        public virtual ICollection<ClassAssignmentSubmissionEntity> AssignmentSubmissions { get; set; }
         public DateTime StartSubmissionAt { get; set; }
         public DateTime EndSubmissionAt { get; set; }
     }

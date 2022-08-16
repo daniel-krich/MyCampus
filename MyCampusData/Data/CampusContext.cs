@@ -13,11 +13,12 @@ namespace MyCampusData.Data
     {
 #nullable disable
         public DbSet<UserEntity> Users { get; set; }
-        public DbSet<CourseAssignmentEntity> CourseAssignments { get; set; }
-        public DbSet<CourseAssignmentSubmissionEntity> CourseAssignmentSubmissions { get; set; }
         public DbSet<CourseEntity> Courses { get; set; }
-        public DbSet<CourseMeetingEntity> CourseMeetings { get; set; }
-        public DbSet<UserCourseEntity> UserCourses { get; set; }
+        public DbSet<ClassAssignmentEntity> ClassAssignments { get; set; }
+        public DbSet<ClassAssignmentSubmissionEntity> ClassAssignmentSubmissions { get; set; }
+        public DbSet<ClassEntity> Classes { get; set; }
+        public DbSet<ClassMeetingEntity> ClassMeetings { get; set; }
+        public DbSet<UserClassEntity> UserClasses { get; set; }
         public DbSet<SessionEntity> Sessions { get; set; }
 
         protected readonly IConfiguration Configuration;
@@ -51,7 +52,7 @@ namespace MyCampusData.Data
                 .HasForeignKey(x => x.UserId);
 
             modelBuilder.Entity<UserEntity>()
-                .HasMany(x => x.Courses)
+                .HasMany(x => x.Classes)
                 .WithOne(x => x.Student)
                 .HasForeignKey(x => x.StudentId);
 
@@ -61,36 +62,41 @@ namespace MyCampusData.Data
                 .HasForeignKey(x => x.UserId);
 
             modelBuilder.Entity<CourseEntity>()
+               .HasMany(x => x.Classes)
+               .WithOne(x => x.Course)
+               .HasForeignKey(x => x.CourseId);
+
+            modelBuilder.Entity<ClassEntity>()
                .HasMany(x => x.Students)
-               .WithOne(x => x.Course)
-               .HasForeignKey(x => x.CourseId);
+               .WithOne(x => x.Class)
+               .HasForeignKey(x => x.ClassId);
 
-            modelBuilder.Entity<CourseEntity>()
+            modelBuilder.Entity<ClassEntity>()
                .HasMany(x => x.Meetings)
-               .WithOne(x => x.Course)
-               .HasForeignKey(x => x.CourseId);
+               .WithOne(x => x.Class)
+               .HasForeignKey(x => x.ClassId);
 
-            modelBuilder.Entity<CourseEntity>()
+            modelBuilder.Entity<ClassEntity>()
                .HasMany(x => x.Assignments)
-               .WithOne(x => x.Course)
-               .HasForeignKey(x => x.CourseId);
+               .WithOne(x => x.Class)
+               .HasForeignKey(x => x.ClassId);
 
-            modelBuilder.Entity<CourseEntity>()
+            modelBuilder.Entity<ClassEntity>()
                 .HasOne(x => x.Lecturer)
-                .WithMany(x => x.LecturingCourses)
+                .WithMany(x => x.LecturingClasses)
                 .HasForeignKey(x => x.LecturerId);
 
-            modelBuilder.Entity<CourseAssignmentEntity>()
-                .HasOne(x => x.Course)
+            modelBuilder.Entity<ClassAssignmentEntity>()
+                .HasOne(x => x.Class)
                 .WithMany(x => x.Assignments)
-                .HasForeignKey(x => x.CourseId);
+                .HasForeignKey(x => x.ClassId);
 
-            modelBuilder.Entity<CourseAssignmentEntity>()
+            modelBuilder.Entity<ClassAssignmentEntity>()
                 .HasMany(x => x.AssignmentSubmissions)
                 .WithOne(x => x.Assignment)
                 .HasForeignKey(x => x.AssignmentId);
 
-            modelBuilder.Entity<CourseAssignmentSubmissionEntity>()
+            modelBuilder.Entity<ClassAssignmentSubmissionEntity>()
                 .HasOne(x => x.Assignment)
                 .WithMany(x => x.AssignmentSubmissions)
                 .HasForeignKey(x => x.AssignmentId);

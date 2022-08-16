@@ -10,20 +10,20 @@
 <div class="container mb-5">
     <h2 class="mb-4">הקורסים שלי</h2>
 
-    @if(courses != null)
+    @if(classes != null)
     {
-        if (courses.Count > 0)
+        if (classes.Count > 0)
         {
             <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
-                @foreach (var course in courses)
+                @foreach (var currClass in classes)
                 {
-                    <div class="col-lg-4 mb-3 d-flex align-items-stretch">
+                    <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
                         <div class="card shadow-sm">
                             <div class="card-body">
-                                <p class="card-title h4 mb-2">@course.course.Name</p>
+                                <p class="card-title h4 mb-2">@currClass.course.Name</p>
                                 <div class="card-text">
-                                    <p class="h6 text-muted mb-3">@course.course.Description</p>
-                                    <p class="">מרצה ראשי: @(course.lecturer != null ? (course.lecturer.FirstName + " " + course.lecturer.LastName) : "לא שובץ")</p>
+                                    <p class="h6 text-muted mb-3">כיתה: @currClass.currentClass.Name</p>
+                                    <p class="">מרצה ראשי: @(currClass.classLecturer != null ? (currClass.classLecturer.FirstName + " " + currClass.classLecturer.LastName) : "לא שובץ")</p>
                                 </div>
                             </div>
                         </div>
@@ -57,8 +57,8 @@
 @code {
     private string? DayStateGreet;
 
-    private List<(CourseEntity course, UserEntity? lecturer)>? courses;
-    private List<(CourseMeetingEntity meeting, CourseEntity course, UserEntity lecturer)>? meetings;
+    private List<(ClassEntity currentClass, CourseEntity course, UserEntity? classLecturer)>? classes;
+    private List<(ClassMeetingEntity meeting, ClassEntity currentClass, CourseEntity course, UserEntity meetingLecturer)>? meetings;
 
     protected override void OnInitialized()
     {
@@ -90,13 +90,20 @@
                 var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
-                    courses = await (from userCourse in user.Courses select (userCourse.Course, userCourse.Course.Lecturer)).ToAsyncEnumerable().ToListAsync();
+                    var userClasses = await (from userClass in user.Classes select userClass.Class).ToAsyncEnumerable().ToListAsync();
+                    using var secondDbContext = await campusContextFactory.CreateDbContextAsync();
+                    classes = await (from currClass in userClasses
+                                     from course in secondDbContext.Courses
+                                     where course.Id == currClass.CourseId
+                                     select (currClass, course, currClass.Lecturer)).ToAsyncEnumerable().ToListAsync();
+
                     var currentTime = DateTime.Now;
-                    meetings = await (from course in courses
-                                      from meeting in dbContext.CourseMeetings
-                                      where course.course.Id == meeting.CourseId && (meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2))
+                    meetings = await (from myclass in classes
+                                      from meeting in dbContext.ClassMeetings
+                                      where myclass.currentClass.Id == meeting.ClassId &&
+                                      (meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2))
                                       orderby meeting.StartAt ascending
-                                      select (meeting, meeting.Course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
+                                      select (meeting, myclass.currentClass, myclass.course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
                 }
             }
         }

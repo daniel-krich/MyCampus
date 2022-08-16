@@ -21,8 +21,8 @@ namespace MyCampusData.Entities
         public byte[] PasswordSalt { get; set; }
         public GenderEnum Gender { get; set; }
         public UserPermissionsEnum Permissions { get; set; }
-        public virtual ICollection<UserCourseEntity> Courses { get; set; }
-        public virtual ICollection<CourseEntity> LecturingCourses { get; set; }
+        public virtual ICollection<UserClassEntity> Classes { get; set; }
+        public virtual ICollection<ClassEntity> LecturingClasses { get; set; }
         public virtual ICollection<SessionEntity> Sessions { get; set; }
 
         [Required, MaxLength(30)]

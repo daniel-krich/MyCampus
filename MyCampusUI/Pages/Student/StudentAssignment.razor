@@ -1,0 +1,15 @@
+﻿@page "/student/assignment/{AssignmentId:guid}"
+
+@inject IAuthenticationStateService authenticationState
+@inject NavigationManager navigationManager
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<div class="container mb-5">
+    <h2 class="mb-4">@AssignmentId</h2>
+</div>
+
+@code {
+    [Parameter] public Guid AssignmentId { get; set; }
+}
+
+

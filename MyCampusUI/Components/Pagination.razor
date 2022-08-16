@@ -2,7 +2,7 @@
 
 <ul class="pagination pagination-purple p-0">
     <li class="@($"page-item" + (CurrentPageItem.Item == 1 ? " disabled": null))">
-        <NavLink class="page-link" href="@($"/student/meetings/{CurrentPageItem.Item-1}")">
+        <NavLink class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item-1}")">
             <span aria-hidden="true">&laquo;</span>
         </NavLink>
     </li>
@@ -14,22 +14,21 @@
     {
         var pageLoopIndex = i;
         <li class="@($"page-item" + (pageLoopIndex == CurrentPageItem.Item ? " active": null))">
-            <NavLink class="page-link" href="@($"/student/meetings/{pageLoopIndex}")">
+            <NavLink class="page-link" href="@($"{UrlPagination}{pageLoopIndex}")">
                 <span aria-hidden="true">@pageLoopIndex</span>
             </NavLink>
         </li>
     }
     <li class="@($"page-item" + (CurrentPageItem.Item == CurrentPagesCountItem.Item ? " disabled": null))">
-        <NavLink class="page-link" href="@($"/student/meetings/{CurrentPageItem.Item+1}")">
+        <NavLink class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item+1}")">
             <span aria-hidden="true">&raquo;</span>
         </NavLink>
     </li>
 </ul>
 
 @code {
-    [Parameter] public int MeetingsPerPage { get; set; } = 10;
-
     [Parameter] public int PagesBufferRange { get; set; } = 5;
+    [Parameter] public string UrlPagination { get; set; } = "";
 
     [Parameter] public ItemRef<long> CurrentPageItem { get; set; } = new(1);
     [Parameter] public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);

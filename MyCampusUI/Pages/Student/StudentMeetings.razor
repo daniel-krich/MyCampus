@@ -52,7 +52,7 @@
                     </div>
                 }
                 <nav class="d-flex justify-content-center mt-4">
-                    <Pagination MeetingsPerPage="@meetingsPerPage" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
+                    <Pagination UrlPagination="/student/meetings/" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
                 </nav>
             </div>
         }
@@ -64,7 +64,7 @@
 </div>
 
 @code {
-    private List<(CourseMeetingEntity meeting, CourseEntity course, UserEntity lecturer)>? meetings;
+    private List<(ClassMeetingEntity meeting, CourseEntity course, ClassEntity currClass, UserEntity lecturer)>? meetings;
 
     public ItemRef<long> CurrentPageItem { get; set; } = new(1);
     public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
@@ -89,21 +89,24 @@
                 var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
-                    meetingsCount = await (from course in user.Courses
-                                                from meeting in dbContext.CourseMeetings
-                                                where course.CourseId == meeting.CourseId
-                                                orderby meeting.StartAt descending
-                                                select meeting).ToAsyncEnumerable().LongCountAsync();
+                    var userClasses = await (from userClass in user.Classes select userClass.Class).ToAsyncEnumerable().ToListAsync();
+                    meetingsCount = await (from currClass in userClasses
+                                           from meeting in dbContext.ClassMeetings
+                                           where currClass.Id == meeting.ClassId
+                                           select meeting.Id).ToAsyncEnumerable().LongCountAsync();
                     meetingsPages = Convert.ToInt64(Math.Ceiling((double)meetingsCount / meetingsPerPage));
                     CurrentPagesCountItem.Item = meetingsPages;
 
-                    var courses = await (from userCourse in user.Courses select (userCourse.Course, userCourse.Course.Lecturer)).ToAsyncEnumerable().ToListAsync();
+
+                    using var secondDbContext = await campusContextFactory.CreateDbContextAsync();
                     var currentTime = DateTime.Now;
-                    meetings = await (from course in user.Courses
-                                      from meeting in dbContext.CourseMeetings
-                                      where course.CourseId == meeting.CourseId
+                    meetings = await (from myclass in userClasses
+                                      from meeting in dbContext.ClassMeetings
+                                      from course in secondDbContext.Courses
+                                      where myclass.Id == meeting.ClassId &&
+                                      course.Id == myclass.CourseId
                                       orderby meeting.StartAt descending
-                                      select (meeting, meeting.Course, meeting.Lecturer)).Skip((PageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToAsyncEnumerable().ToListAsync();
+                                      select (meeting, course, myclass, meeting.Lecturer)).Skip((PageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToAsyncEnumerable().ToListAsync();
                 }
             }
         }
