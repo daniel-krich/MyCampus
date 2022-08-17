@@ -56,9 +56,9 @@
             <button type="submit" disabled="@inAction" class="btn btn-outline-dark rounded-pill w-100 mt-3 mb-3">
                 @if (inAction)
                 {
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
                 }
-                עדכון פרטים
+                <span>עדכון פרטים</span>
             </button>
         </EditForm>
         <DismissibleAlert Message="@errorMessage" Classes="alert-warning m-2 shadow-sm"/>

@@ -11,11 +11,12 @@ namespace MyCampusUI.Components
         [Inject] public NavigationManager NavManager { get; set; }
 #nullable enable
 
-        protected override void OnAfterRender(bool firstRender)
+        protected override void OnInitialized()
         {
-            if (firstRender && Route != null)
+            if (Route != null)
             {
                 NavManager.NavigateTo(Route, Reload);
+                Console.WriteLine(Route);
             }
         }
     }

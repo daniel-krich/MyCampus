@@ -32,7 +32,7 @@
                             </span>
                         }
                     </h5>
-                    <button class="btn btn-dark shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigatePrevious())">
+                    <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigatePrevious())">
                         חזור <span class="oi oi-arrow-left"></span>
                     </button>
                     <div class="card-body">
@@ -61,7 +61,7 @@
                                                     <button type="submit" class="btn btn-dark mb-1" disabled="@(assignmentSubmission?.Evaluation != null || inAction)">
                                                         @if (inAction)
                                                         {
-                                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                            <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
                                                         }
 
                                                         @if (assignmentSubmission == null)
@@ -113,7 +113,11 @@
                 var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
-                    assignment = await dbContext.ClassAssignments.FindAsync(AssignmentId);
+                    assignment = await (from userClass in user.Classes
+                                        from assign in dbContext.ClassAssignments
+                                        where assign.Id == AssignmentId &&
+                                        assign.ClassId == userClass.ClassId
+                                        select assign).ToAsyncEnumerable().FirstOrDefaultAsync();
 
                     if(assignment != null)
                     {
