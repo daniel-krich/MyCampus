@@ -1,10 +1,11 @@
-﻿<div class="carousel carousel-dark shadow-lg slide">
+﻿<div class="carousel carousel-dark">
     <div class="carousel-inner">
-        <div class="carousel-item d-flex flex-column justify-content-center align-items-center bg-light p-5">
+        <div class="carousel-item d-flex flex-column justify-content-center align-items-center bg-light p-sides-5">
             <div class="row justify-content-around w-100">
                 <p class="h2 text-center">@Meetings[currentIndex].course.Name</p>
                 <p class="h5 text-center mb-4">@Meetings[currentIndex].meeting.Title</p>
                 <p class="h5">מתחיל ב@(Meetings[currentIndex].meeting.StartAt.ToLongDateHebrewString())</p>
+                <p class="h6 text-muted">כיתה: @Meetings[currentIndex].currentClass.Name</p>
                 <p class="h6 text-muted mb-4">מרצה: @(Meetings[currentIndex].meetingLecturer.FirstName + " " + @Meetings[currentIndex].meetingLecturer.LastName)</p>
                 <div class="row justify-content-center">
                     <a role="button" class="btn btn-outline-dark btn-sm p-2 w-auto" target="_blank" href="@Meetings[currentIndex].meeting.MeetingUrl">הצטרפות למפגש</a>
@@ -27,11 +28,11 @@
         int currIndx = i;
         if(i == currentIndex)
         {
-            <i role="button" class="fa-solid fa-circle me-2"></i>
+            <i role="button" class="fa-solid fa-circle me-2 text-dark"></i>
         }
         else
         {
-            <i role="button" class="fa-solid fa-circle-dot me-2" @onclick="@(() => OnSelectExactIndex(currIndx))"></i>
+            <i role="button" class="fa-regular fa-circle me-2 text-black-50" @onclick="@(() => OnSelectExactIndex(currIndx))"></i>
         }
     }
 </div>

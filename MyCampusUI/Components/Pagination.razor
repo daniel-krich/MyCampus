@@ -1,7 +1,7 @@
 ﻿@implements IDisposable
 
 <ul class="pagination pagination-purple p-0">
-    <li class="@($"page-item" + (CurrentPageItem.Item == 1 ? " disabled": null))">
+    <li class="page-item" disabled="@(CurrentPageItem.Item == 1)">
         <NavLink class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item-1}")">
             <span aria-hidden="true">&laquo;</span>
         </NavLink>
@@ -19,7 +19,7 @@
             </NavLink>
         </li>
     }
-    <li class="@($"page-item" + (CurrentPageItem.Item == CurrentPagesCountItem.Item ? " disabled": null))">
+    <li class="page-item" disabled="@(CurrentPageItem.Item == CurrentPagesCountItem.Item)">
         <NavLink class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item+1}")">
             <span aria-hidden="true">&raquo;</span>
         </NavLink>

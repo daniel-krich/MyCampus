@@ -1,0 +1,16 @@
+﻿.p-sides-5 {
+    padding: 0.5rem 3rem 0.5rem 3rem;
+}
+
+.p-sides-2 {
+    padding: 0px 0.5rem 0px 0.5rem;
+}
+
+.carousel {
+    border-radius: 50px;
+    box-shadow: 0px 0px 20px #21212130;
+}
+
+.carousel > .carousel-inner {
+    border-radius: 50px;
+}

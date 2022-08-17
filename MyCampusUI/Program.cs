@@ -17,6 +17,7 @@ builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthenticationStateService, AuthenticationStateService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<CustomNavigationService>();
 builder.Services.AddDbContextFactory<CampusContext>(_ => { });
 
 builder.Services.AddAuthentication(opt =>

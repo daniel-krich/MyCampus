@@ -3,7 +3,7 @@
 @inject IAuthenticationStateService authenticationState
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
-<div class="d-flex flex-row justify-content-center">
+<div class="container justify-content-center">
     <div class="profile-box">
         <p class="h3 text-muted text-center mt-3 mb-3">עדכון פרטי משתמש</p>
         <EditForm Context="RegisterContext" OnValidSubmit="@SubmitAsync" Model="this.updateProfile">
