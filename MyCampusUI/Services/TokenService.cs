@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MyCampusUI.Consts;
+using MyCampusUI.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,13 +12,6 @@ using System.Threading.Tasks;
 
 namespace MyCampusUI.Services
 {
-    public interface ITokenService
-    {
-        string GenerateAccessToken(IEnumerable<Claim> claims, DateTime expiresAt);
-        ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
-        ClaimsPrincipal GetPrincipalFromToken(string token);
-    }
-
     public class TokenService : ITokenService
     {
         public string GenerateAccessToken(IEnumerable<Claim> claims, DateTime expiresAt)

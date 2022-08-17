@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MyCampusData.Data;
 using MyCampusUI.Services;
-using MyCampusUI.Data;
 using MyCampusUI.Interfaces.Services;
 using MyCampusUI.Middleware;
 
@@ -13,11 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthenticationStateService, AuthenticationStateService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<CustomNavigationService>();
+builder.Services.AddScoped<ICustomNavigationService, CustomNavigationService>();
 builder.Services.AddDbContextFactory<CampusContext>(_ => { });
 
 builder.Services.AddAuthentication(opt =>
@@ -27,6 +25,8 @@ builder.Services.AddAuthentication(opt =>
 })
    .AddJwtBearer();
 builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>();
+
+builder.Services.AddSingleton<IBundleFilesService, BundleFilesService>();
 
 builder.Services.AddAuthorization();
 

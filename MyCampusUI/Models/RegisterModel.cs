@@ -6,16 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyCampusData.Models
+namespace MyCampusUI.Models
 {
-    public class UpdateProfileModel
+    public class RegisterModel
     {
+        [Required, MinLength(5), MaxLength(30)]
+        public string Username { get; set; } = "";
 
-        [MaxLength(30)]
-        public string CurrentPassword { get; set; } = "";
-
-        [MaxLength(30)]
-        public string NewPassword { get; set; } = "";
+        [Required, MinLength(8), MaxLength(30)]
+        public string Password { get; set; } = "";
 
         [Required, MinLength(2), MaxLength(30)]
         public string FirstName { get; set; } = "";
@@ -30,9 +29,25 @@ namespace MyCampusData.Models
         public string PhoneNumber { get; set; } = "";
 
         [Required, MinLength(5), MaxLength(32)]
+        public string Country { get; set; } = "ישראל";
+
+        [Required, MinLength(5), MaxLength(32)]
         public string City { get; set; } = "";
 
         [Required]
         public GenderEnum? Gender { get; set; }
+
+        public void ClearFields()
+        {
+            Username = "";
+            Password = "";
+            FirstName = "";
+            LastName = "";
+            Email = "";
+            PhoneNumber  = "";
+            Country = "";
+            City = "";
+            Gender = null;
+        }
     }
 }

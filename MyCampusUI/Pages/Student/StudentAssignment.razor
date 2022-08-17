@@ -1,7 +1,9 @@
 ﻿@page "/student/assignment/{AssignmentId:guid}"
 
 @inject IAuthenticationStateService authenticationState
-@inject CustomNavigationService navigationService
+@inject ICustomNavigationService navigationService
+@inject IBundleFilesService bundleService
+@inject IJSRuntime jsRuntime
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
 <div class="container mb-5">
@@ -41,7 +43,7 @@
                                 <div class="card-body">
                                     <h1 class="mb-0 text-center">פרטי המשימה</h1>
                                     <div class="mt-5">
-                                        @assignment.AssignmentSource
+                                        @assignment.AssignmentText
                                     </div>
                                 </div>
                             </div>
@@ -54,9 +56,19 @@
                                         <EditForm Context="AssignmentSubmitContext" OnSubmit="@OnAssignmentSubmit" Model="this.assignmentSubmit">
                                             <div class="form-group">
                                                 <textarea class="form-control" name="" id="" cols="30" rows="10" @bind="assignmentSubmit.SubmissionText"/>
-                                                <p class="mt-3">
-                                                    הורד קובץ מוגש        
-                                                </p>
+                                                <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-primary shadow-sm mt-2 mb-2" ButtonTask="@((e) => DownloadAttachedBundle())" disabled="@(assignmentSubmission?.AssignmentSubmissionBundleId == null)">
+                                                    <span>הורד קבצים שהוגשו</span>
+                                                </AsyncLoadingButton>
+                                                <div>
+                                                    <InputFile OnChange="@UploadFilesRequest" multiple />
+                                                </div>
+                                                @if(requestedUploadFiles != null)
+                                                {
+                                                    @foreach(var file in requestedUploadFiles)
+                                                    {
+                                                        <p>@file.Name</p>
+                                                    }
+                                                }
                                                 <div class="form-group text-center mt-5">
                                                     <button type="submit" class="btn btn-dark mb-1" disabled="@(assignmentSubmission?.Evaluation != null || inAction)">
                                                         @if (inAction)
@@ -104,6 +116,8 @@
     private ClassAssignmentEntity? assignment;
     private ClassAssignmentSubmissionEntity? assignmentSubmission;
 
+    private IReadOnlyList<IBrowserFile>? requestedUploadFiles;
+
     protected override async Task OnInitializedAsync()
     {
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
@@ -133,6 +147,34 @@
         }
     }
 
+    private async Task DownloadAttachedBundle()
+    {
+        if (assignmentSubmission != null && assignmentSubmission.AssignmentSubmissionBundleId.HasValue)
+        {
+            using var stream = await bundleService.OpenBundleStreamAsync(assignmentSubmission.AssignmentSubmissionBundleId.Value);
+            if (stream != null)
+            {
+                using DotNetStreamReference streamRef = new DotNetStreamReference(stream);
+                string? blobUrl = await jsRuntime.CreateObjectBlobUrl(streamRef, FileTransferEnum.ApplicationZip);
+                if (blobUrl != null)
+                {
+                    await jsRuntime.DownloadBlob($"[{assignmentSubmission.SubmittedAt.ToString("g")}] {assignment?.Title}.zip", blobUrl);
+                    await jsRuntime.ClearBlobUrlObject(blobUrl);
+                }
+            }
+            else
+            {
+                successMessage.Item = "";
+                warningMessage.Item = "אירעה שגיאה, הקבצים לא נמצאו";
+            }
+        }
+    }
+
+    private void UploadFilesRequest(InputFileChangeEventArgs e)
+    {
+        requestedUploadFiles = e.GetMultipleFiles(20);
+    }
+
     private async Task OnAssignmentSubmit()
     {
         if (!inAction)
@@ -150,6 +192,37 @@
                         {
                             assignmentSub.SubmissionText = assignmentSubmit.SubmissionText;
                             assignmentSub.SubmittedAt = DateTime.Now;
+
+                            if(requestedUploadFiles != null)
+                            {
+                                if (assignmentSub.AssignmentSubmissionBundleId.HasValue)
+                                {
+                                    var rewriteResult = await bundleService.RewriteBundleAsync(assignmentSub.AssignmentSubmissionBundleId.Value, requestedUploadFiles.ToArray());
+                                    if(!rewriteResult)
+                                    {
+                                        successMessage.Item = "";
+                                        warningMessage.Item = "אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 1MB והמשקל הכולל לא עולה על 15MB";
+                                        inAction = false;
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    var bundleId = await bundleService.CreateBundleAsync(requestedUploadFiles.ToArray());
+                                    if (bundleId.HasValue)
+                                    {
+                                        assignmentSub.AssignmentSubmissionBundleId = bundleId;
+                                    }
+                                    else
+                                    {
+                                        successMessage.Item = "";
+                                        warningMessage.Item = "אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 1MB והמשקל הכולל לא עולה על 15MB";
+                                        inAction = false;
+                                        return;
+                                    }
+                                }
+                            }
+
                             dbContext.ClassAssignmentSubmissions.Update(assignmentSub);
                             await dbContext.SaveChangesAsync();
                             assignmentSubmission = assignmentSub;

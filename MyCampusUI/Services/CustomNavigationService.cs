@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using MyCampusUI.Interfaces.Services;
 
 namespace MyCampusUI.Services;
 
-public class CustomNavigationService : IDisposable
+public class CustomNavigationService : IDisposable, ICustomNavigationService
 {
     private readonly NavigationManager _navigationManager;
     public string? CurrentPath { get; set; }

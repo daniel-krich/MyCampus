@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using MyCampusData.Data;
 using MyCampusData.Entities;
-using MyCampusData.Models;
 using MyCampusData.Enums;
 using MyCampusUI.Consts;
+using MyCampusUI.Models;
 using MyCampusUI.Interfaces.Services;
 using System.Security.Claims;
 using System.Security.Cryptography;

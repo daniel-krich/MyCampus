@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using MyCampusUI.Enums;
 
 namespace MyCampusUI.Extensions
 {
@@ -12,6 +13,12 @@ namespace MyCampusUI.Extensions
         public const string WriteCookie = "campusCore.writeCookie";
         public const string GetCookie = "campusCore.getCookie";
         public const string DeleteCookie = "campusCore.deleteCookie";
+
+        // campus-streams.js
+        public const string CreateObjectBlobUrl = "campusStreams.createObjectBlobUrl";
+        public const string ClearBlobUrlObjects = "campusStreams.clearBlobUrlObjects";
+        public const string ClearBlobUrlObject = "campusStreams.clearBlobUrlObject";
+        public const string DownloadBlob = "campusStreams.downloadBlob";
 
     }
 
@@ -50,6 +57,26 @@ namespace MyCampusUI.Extensions
         public static async Task NavigateBack(this IJSRuntime js)
         {
             await js.TryInvokeVoidAsync(JsFunctions.NavigateBack);
+        }
+
+        public static async Task<string?> CreateObjectBlobUrl(this IJSRuntime js, DotNetStreamReference stream, FileTransferEnum mime = FileTransferEnum.PlainText)
+        {
+            return await js.TryInvokeAsync<string?>(JsFunctions.CreateObjectBlobUrl, stream, mime.ToMimeString());
+        }
+
+        public static async Task ClearBlobUrlObjects(this IJSRuntime js)
+        {
+            await js.TryInvokeVoidAsync(JsFunctions.ClearBlobUrlObjects);
+        }
+
+        public static async Task ClearBlobUrlObject(this IJSRuntime js, string? url)
+        {
+            await js.TryInvokeVoidAsync(JsFunctions.ClearBlobUrlObject, url); ;
+        }
+
+        public static async Task DownloadBlob(this IJSRuntime js, string filename, string url)
+        {
+            await js.TryInvokeVoidAsync(JsFunctions.DownloadBlob, filename, url);
         }
     }
 }

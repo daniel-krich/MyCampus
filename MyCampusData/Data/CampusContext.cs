@@ -20,6 +20,7 @@ namespace MyCampusData.Data
         public DbSet<ClassMeetingEntity> ClassMeetings { get; set; }
         public DbSet<UserClassEntity> UserClasses { get; set; }
         public DbSet<SessionEntity> Sessions { get; set; }
+        public DbSet<BundleFileEntity> Bundles { get; set; }
 
         protected readonly IConfiguration Configuration;
 

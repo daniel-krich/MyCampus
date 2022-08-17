@@ -1,6 +1,6 @@
 ﻿using MyCampusData.Entities;
 using MyCampusData.Enums;
-using MyCampusData.Models;
+using MyCampusUI.Models;
 
 namespace MyCampusUI.Interfaces.Services
 {

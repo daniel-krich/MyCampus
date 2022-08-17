@@ -22,5 +22,7 @@ namespace MyCampusData.Entities
 #nullable enable
         [MaxLength(100)]
         public string? Evaluation { get; set; }
+        public Guid? AssignmentSubmissionBundleId { get; set; }
+        public virtual BundleFileEntity? AssignmentSubmissionBundle { get; set; }
     }
 }
