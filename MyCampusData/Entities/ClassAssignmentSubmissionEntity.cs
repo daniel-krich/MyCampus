@@ -21,7 +21,9 @@ namespace MyCampusData.Entities
         public DateTime SubmittedAt { get; set; }
 #nullable enable
         [MaxLength(100)]
-        public string? Evaluation { get; set; }
+        public string? LecturerEvaluation { get; set; }
+        [MaxLength(1024)]
+        public string? LecturerNotes { get; set; }
         public Guid? AssignmentSubmissionBundleId { get; set; }
         public virtual BundleFileEntity? AssignmentSubmissionBundle { get; set; }
     }

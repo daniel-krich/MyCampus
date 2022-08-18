@@ -1,12 +1,15 @@
 ﻿@page "/student/assignment/{AssignmentId:guid}"
 
+@implements IDisposable
+
 @inject IAuthenticationStateService authenticationState
 @inject ICustomNavigationService navigationService
 @inject IBundleFilesService bundleService
 @inject IJSRuntime jsRuntime
+@inject IAssignmentManagerService assignmentManager
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
-<div class="container mb-5">
+<div class="container mb-4">
     @if (assignment != null)
     {
         <h2 class="mb-4">משימה להגשה - @assignment.Title</h2>
@@ -21,7 +24,7 @@
                                 לא הוגש
                             </span>
                         }
-                        else if(assignmentSubmission.Evaluation == null)
+                        else if(assignmentSubmission.LecturerEvaluation == null)
                         {
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
                                 הוגש
@@ -56,21 +59,19 @@
                                         <EditForm Context="AssignmentSubmitContext" OnSubmit="@OnAssignmentSubmit" Model="this.assignmentSubmit">
                                             <div class="form-group">
                                                 <textarea class="form-control" name="" id="" cols="30" rows="10" @bind="assignmentSubmit.SubmissionText"/>
-                                                <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-primary shadow-sm mt-2 mb-2" ButtonTask="@((e) => DownloadAttachedBundle())" disabled="@(assignmentSubmission?.AssignmentSubmissionBundleId == null)">
+                                                <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-primary shadow-sm mt-3 mb-3" ButtonTask="@((e) => DownloadAttachedBundle())" disabled="@(assignmentSubmission?.AssignmentSubmissionBundleId == null)">
                                                     <span>הורד קבצים שהוגשו</span>
                                                 </AsyncLoadingButton>
-                                                <div>
-                                                    <InputFile OnChange="@UploadFilesRequest" multiple />
-                                                </div>
-                                                @if(requestedUploadFiles != null)
+
+                                                @if (assignmentSubmission?.LecturerEvaluation == null)
                                                 {
-                                                    @foreach(var file in requestedUploadFiles)
-                                                    {
-                                                        <p>@file.Name</p>
-                                                    }
+                                                    <section>
+                                                        <PrettyInputFile MaxMultipleFiles="20" RequestedUploadFiles="@requestedUploadFiles" />
+                                                    </section>
                                                 }
-                                                <div class="form-group text-center mt-5">
-                                                    <button type="submit" class="btn btn-dark mb-1" disabled="@(assignmentSubmission?.Evaluation != null || inAction)">
+
+                                                <div class="form-group text-center mt-3 mb-3">
+                                                    <button type="submit" class="btn btn-dark mb-1" disabled="@(assignmentSubmission?.LecturerEvaluation != null || inAction)">
                                                         @if (inAction)
                                                         {
                                                             <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
@@ -80,7 +81,7 @@
                                                         {
                                                             <span>הגשת המשימה</span>
                                                         }
-                                                        else if(assignmentSubmission.Evaluation == null)
+                                                        else if(assignmentSubmission.LecturerEvaluation == null)
                                                         {
                                                             <span>עדכון המשימה</span>
                                                         }
@@ -90,6 +91,16 @@
                                                         }
                                                     </button>
                                                 </div>
+
+                                                @if (assignmentSubmission?.LecturerNotes != null)
+                                                {
+                                                    <div class="alert alert-primary" role="alert">
+                                                        <small>
+                                                            <span class="fw-bolder">הערות מרצה: </span>
+                                                            <span>@assignmentSubmission.LecturerNotes</span>
+                                                        </small>
+                                                    </div>
+                                                }
                                             </div>
                                         </EditForm>
                                     </div>
@@ -116,7 +127,9 @@
     private ClassAssignmentEntity? assignment;
     private ClassAssignmentSubmissionEntity? assignmentSubmission;
 
-    private IReadOnlyList<IBrowserFile>? requestedUploadFiles;
+    private CancellationTokenSource cancelTokenSource = new();
+
+    private ItemRef<IReadOnlyList<IBrowserFile>?> requestedUploadFiles = new(default);
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,7 +171,7 @@
                 string? blobUrl = await jsRuntime.CreateObjectBlobUrl(streamRef, FileTransferEnum.ApplicationZip);
                 if (blobUrl != null)
                 {
-                    await jsRuntime.DownloadBlob($"[{assignmentSubmission.SubmittedAt.ToString("g")}] {assignment?.Title}.zip", blobUrl);
+                    await jsRuntime.DownloadBlob($"{assignment?.Title ?? "Unnamed assignment"}.zip", blobUrl);
                     await jsRuntime.ClearBlobUrlObject(blobUrl);
                 }
             }
@@ -170,94 +183,38 @@
         }
     }
 
-    private void UploadFilesRequest(InputFileChangeEventArgs e)
-    {
-        requestedUploadFiles = e.GetMultipleFiles(20);
-    }
-
     private async Task OnAssignmentSubmit()
     {
         if (!inAction)
         {
-            inAction = true;
-            using (var dbContext = await campusContextFactory.CreateDbContextAsync())
+            try
             {
-                if (authenticationState.DisposedUserEntity?.Id != null)
-                {
-                    var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
-                    var assignmentSub = await dbContext.ClassAssignmentSubmissions.FindAsync(assignmentSubmission?.Id);
-                    if (user != null && assignment != null && assignmentSub?.Evaluation == null)
-                    {
-                        if (assignmentSub != null)
-                        {
-                            assignmentSub.SubmissionText = assignmentSubmit.SubmissionText;
-                            assignmentSub.SubmittedAt = DateTime.Now;
-
-                            if(requestedUploadFiles != null)
-                            {
-                                if (assignmentSub.AssignmentSubmissionBundleId.HasValue)
-                                {
-                                    var rewriteResult = await bundleService.RewriteBundleAsync(assignmentSub.AssignmentSubmissionBundleId.Value, requestedUploadFiles.ToArray());
-                                    if(!rewriteResult)
-                                    {
-                                        successMessage.Item = "";
-                                        warningMessage.Item = "אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 1MB והמשקל הכולל לא עולה על 15MB";
-                                        inAction = false;
-                                        return;
-                                    }
-                                }
-                                else
-                                {
-                                    var bundleId = await bundleService.CreateBundleAsync(requestedUploadFiles.ToArray());
-                                    if (bundleId.HasValue)
-                                    {
-                                        assignmentSub.AssignmentSubmissionBundleId = bundleId;
-                                    }
-                                    else
-                                    {
-                                        successMessage.Item = "";
-                                        warningMessage.Item = "אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 1MB והמשקל הכולל לא עולה על 15MB";
-                                        inAction = false;
-                                        return;
-                                    }
-                                }
-                            }
-
-                            dbContext.ClassAssignmentSubmissions.Update(assignmentSub);
-                            await dbContext.SaveChangesAsync();
-                            assignmentSubmission = assignmentSub;
-                            warningMessage.Item = "";
-                            successMessage.Item = "המשימה עודכנה בהצלחה";
-                        }
-                        else
-                        {
-                            try
-                            {
-                                var newSubmission = new ClassAssignmentSubmissionEntity
-                                    {
-                                        StudentId = user.Id,
-                                        AssignmentId = assignment.Id,
-                                        SubmissionFileUrl = "https://none",
-                                        SubmissionText = assignmentSubmit.SubmissionText,
-                                        SubmittedAt = DateTime.Now
-                                    };
-                                dbContext.ClassAssignmentSubmissions.Add(newSubmission);
-                                await dbContext.SaveChangesAsync();
-                                assignmentSubmission = newSubmission;
-                                warningMessage.Item = "";
-                                successMessage.Item = "המשימה הוגשה בהצלחה";
-                            }
-                            catch
-                            {
-                                successMessage.Item = "";
-                                warningMessage.Item = "אירעה שגיאה באת הגשת המשימה";
-                            }
-                        }
-                    }
-                }
+                inAction = true;
+                var assignmentSubmitEntity = await assignmentManager.SubmitAssignment(AssignmentId, assignmentSubmit, requestedUploadFiles.Item, cancelTokenSource.Token);
+                assignmentSubmission = assignmentSubmitEntity;
+                warningMessage.Item = "";
+                successMessage.Item = "המשימה הוגשה/עודכנה בהצלחה";
             }
-            inAction = false;
+            catch(AssignmentSubmitException ex)
+            {
+                successMessage.Item = "";
+                warningMessage.Item = ex.Message;
+            }
+            catch
+            {
+                successMessage.Item = "";
+                warningMessage.Item = "אירעה שגיאה באת הגשת המשימה";
+            }
+            finally
+            {
+                inAction = false;
+            }
         }
+    }
+
+    public void Dispose()
+    {
+        cancelTokenSource.Cancel();
     }
 }
 

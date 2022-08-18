@@ -16,6 +16,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthenticationStateService, AuthenticationStateService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICustomNavigationService, CustomNavigationService>();
+builder.Services.AddScoped<IAssignmentManagerService, AssignmentManagerService>();
 builder.Services.AddDbContextFactory<CampusContext>(_ => { });
 
 builder.Services.AddAuthentication(opt =>

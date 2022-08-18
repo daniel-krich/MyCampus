@@ -5,7 +5,7 @@
 @inject NavigationManager navigationManager
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
-<div class="container mb-5">
+<div class="container mb-4">
     <h2 class="mb-4">כל המשימות</h2>
 
     @if(assignments != null)
@@ -28,7 +28,7 @@
                                     לא הוגש
                                 </span>
                             }
-                            else if(assignment.assignmentSubmitted.Evaluation == null)
+                            else if(assignment.assignmentSubmitted.LecturerEvaluation == null)
                             {
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
                                     הוגש
@@ -42,7 +42,7 @@
 
                                 <h5>
                                     <span class="position-absolute top-100 start-50 translate-middle badge bg-dark">
-                                        ציון: @assignment.assignmentSubmitted.Evaluation
+                                        ציון: @assignment.assignmentSubmitted.LecturerEvaluation
                                     </span>
                                 </h5>
                             }

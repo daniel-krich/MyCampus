@@ -10,8 +10,9 @@ namespace MyCampusUI.Services
 {
     public class BundleFilesService : IBundleFilesService
     {
-        public static string BundleRelativeDirectory { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bundle-uploads");
-        public static long MaxFileSize { get; } = 1024 * 1000 * 15;        
+        public static string BundleRelativeDirectory { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
+        public static long MaxOverallFileSize { get; } = 1024 * 1000 * 20; // 20MB 
+        public static long MaxFileSize { get; } = 1024 * 1000 * 2; // 2MB
 
         private readonly IDbContextFactory<CampusContext> _campusContextFactory;
         public BundleFilesService(IDbContextFactory<CampusContext> campusContextFactory)
@@ -20,9 +21,9 @@ namespace MyCampusUI.Services
             Directory.CreateDirectory(BundleRelativeDirectory);
         }
 
-        public async Task<Guid?> CreateBundleAsync(params IBrowserFile[] files)
+        public async Task<Guid?> CreateBundleAsync(IBrowserFile[] files, CancellationToken token = default)
         {
-            if(files.Sum(x => x.Size) > MaxFileSize || files.Any(x => x.Size > MaxFileSize)) return default;
+            if(files.Sum(x => x.Size) > MaxOverallFileSize || files.Any(x => x.Size > MaxFileSize)) return default;
 
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
@@ -42,11 +43,12 @@ namespace MyCampusUI.Services
                         {
                             try
                             {
-                                using var fileStream = file.OpenReadStream(MaxFileSize);
+                                token.ThrowIfCancellationRequested();
+                                using var fileStream = file.OpenReadStream(MaxFileSize, token);
 
                                 var entry = archive.CreateEntry(file.Name);
                                 using var entryStream = entry.Open();
-                                await fileStream.CopyToAsync(entryStream);
+                                await fileStream.CopyToAsync(entryStream, token);
                             }
                             catch { }
                         }
@@ -130,9 +132,9 @@ namespace MyCampusUI.Services
             return default;
         }
 
-        public async Task<bool> RewriteBundleAsync(Guid bundleId, params IBrowserFile[] files)
+        public async Task<bool> RewriteBundleAsync(Guid bundleId, IBrowserFile[] files, CancellationToken token = default)
         {
-            if (files.Sum(x => x.Size) > MaxFileSize || files.Any(x => x.Size > MaxFileSize)) return false;
+            if (files.Sum(x => x.Size) > MaxOverallFileSize || files.Any(x => x.Size > MaxFileSize)) return false;
 
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
@@ -156,11 +158,12 @@ namespace MyCampusUI.Services
                             {
                                 try
                                 {
-                                    using var fileStream = file.OpenReadStream(MaxFileSize);
+                                    token.ThrowIfCancellationRequested();
+                                    using var fileStream = file.OpenReadStream(MaxFileSize, token);
 
                                     var entry = archive.CreateEntry(file.Name);
                                     using var entryStream = entry.Open();
-                                    await fileStream.CopyToAsync(entryStream);
+                                    await fileStream.CopyToAsync(entryStream, token);
                                 }
                                 catch { }
                             }

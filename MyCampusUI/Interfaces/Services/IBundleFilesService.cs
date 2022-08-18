@@ -7,8 +7,8 @@ namespace MyCampusUI.Interfaces.Services
     public interface IBundleFilesService
     {
         Task<bool> DeleteBundleAsync(Guid bundleId);
-        Task<Guid?> CreateBundleAsync(params IBrowserFile[] files);
-        Task<bool> RewriteBundleAsync(Guid bundleId, params IBrowserFile[] files);
+        Task<Guid?> CreateBundleAsync(IBrowserFile[] files, CancellationToken token = default);
+        Task<bool> RewriteBundleAsync(Guid bundleId, IBrowserFile[] files, CancellationToken token = default);
         Task<ZipArchive?> ReadBundleAsync(Guid bundleId);
         Task<Stream?> OpenBundleStreamAsync(Guid bundleId);
     }
