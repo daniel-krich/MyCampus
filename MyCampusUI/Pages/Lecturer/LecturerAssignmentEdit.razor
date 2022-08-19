@@ -152,6 +152,11 @@
                 warningMessage.Item = "";
                 successMessage.Item = "המשימה עודכנה בהצלחה";
             }
+            catch(AssignmentCreateUpdateException ex)
+            {
+                successMessage.Item = "";
+                warningMessage.Item = ex.Message;
+            }
             catch
             {
                 successMessage.Item = "";
