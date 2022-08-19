@@ -1,0 +1,101 @@
+﻿@page "/lecturer/classes"
+@page "/lecturer/classes/{PageId:int}"
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationManager
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Lecturer" RedirectIfInvalid="true">
+
+    <div class="container mb-4">
+        <h2 class="mb-4">כל הכיתות</h2>
+
+        @if(classes != null)
+        {
+            @if (classes.Count > 0)
+            {
+            
+                var numFrom = PageId <= 1 ? 1 : (PageId - 1) * classesPerPage;
+                var numTo = (PageId * classesPerPage) > classesCount ? classesCount : (PageId * classesPerPage);
+            
+                <p>מציג @numFrom ועד @numTo מתוך @classesCount תוצאות</p>
+                <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
+                    @foreach (var classModel in classes)
+                    {
+                        <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
+                            <div class="card h-100 w-100 shadow-sm position-relative">
+                                <div class="card-body mt-3">
+                                    <p class="card-title h4 mb-4">@classModel.Class?.Name</p>
+                                    <div class="card-text">
+                                        <p class="h6">@classModel.Course?.Name</p>
+                                        <p class="text-muted">
+                                            <small>@classModel.Course?.Description</small>
+                                        </p>
+                                        <p class="text-muted">
+                                            <small>נוצר: @classModel.Class?.ClassStartAt.ToLongDateHebrewString()</small>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="dropdown dropend position-absolute top-0 start-0">
+                                  <button class="btn btn-sm btn-light" type="button" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
+                                  <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
+                                    <li><NavLink class="dropdown-item" href="@($"/lecturer/class/{classModel.Class?.Id}/assignments")" Match="NavLinkMatch.All" type="button">צפייה במשימות</NavLink></li>
+                                    <li><NavLink class="dropdown-item" href="/" Match="NavLinkMatch.All" type="button">צפייה במבחנים</NavLink></li>
+                                    <li><NavLink class="dropdown-item" href="/" Match="NavLinkMatch.All" type="button">צפייה בסטודנטים</NavLink></li>
+                                  </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <nav class="d-flex justify-content-center mt-4">
+                    <Pagination UrlPagination="/lecturer/classes/" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
+                </nav>
+            }
+            else
+            {
+                <h4 class="text-muted">לא נמצאו כיתות</h4>
+            }
+        }
+    </div>
+
+</RenderPermission>
+
+@code {
+    private List<ClassModel> classes;
+    public ItemRef<long> CurrentPageItem { get; set; } = new(1);
+    public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
+
+    private int classesPerPage = 9;
+    private int pagesBufferRange = 5;
+
+    private long classesPages;
+    private long classesCount;
+
+    [Parameter] public int PageId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageId = PageId <= 0 ? 1 : PageId;
+        CurrentPageItem.Item = PageId;
+
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    classesCount = await dbContext.GetLecturerClassesCountAsync(user.Id);
+
+                    classesPages = Convert.ToInt64(Math.Ceiling((double)classesCount / classesPerPage));
+
+                    CurrentPagesCountItem.Item = classesPages;
+
+                    classes = await dbContext.GetLecturerClassesPaginationAsync(user.Id, PageId, classesPerPage);
+                }
+            }
+        }
+        CurrentPageItem.Item = PageId;
+    }
+}

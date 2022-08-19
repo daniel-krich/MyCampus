@@ -1,6 +1,12 @@
 ﻿@page "/student/exams"
 
-<h3>StudentExams</h3>
+@inject IAuthenticationStateService authenticationState
+
+<RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
+
+    <h3>StudentExams</h3>
+
+</RenderPermission>
 
 @code {
 

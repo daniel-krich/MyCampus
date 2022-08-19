@@ -5,72 +5,86 @@
 @inject NavigationManager navigationManager
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
-<div class="container mb-4">
-    <h2 class="mb-4">כל המשימות</h2>
+<RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
 
-    @if(assignments != null)
-    {
-        @if (assignments.Count > 0)
+    <div class="container mb-4">
+        <h2 class="mb-4">כל המשימות</h2>
+
+        @if(assignments != null)
         {
+            @if (assignments.Count > 0)
+            {
             
-            var numFrom = PageId <= 1 ? 1 : (PageId - 1) * assignmentsPerPage;
-            var numTo = (PageId * assignmentsPerPage) > assignmentsCount ? assignmentsCount : (PageId * assignmentsPerPage);
+                var numFrom = PageId <= 1 ? 1 : (PageId - 1) * assignmentsPerPage;
+                var numTo = (PageId * assignmentsPerPage) > assignmentsCount ? assignmentsCount : (PageId * assignmentsPerPage);
             
-            <p>מציג @numFrom ועד @numTo מתוך @assignmentsCount תוצאות</p>
-            <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
-                @foreach (var assignment in assignments)
-                {
-                    <div role="button" class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column" @onclick="@(() => navigationManager.NavigateTo("/student/assignment/" + assignment.assignment.Id))">
-                        <div class="card h-100 w-100 shadow-sm position-relative">
-                            @if (assignment.assignmentSubmitted == null)
-                            {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
-                                    לא הוגש
-                                </span>
-                            }
-                            else if(assignment.assignmentSubmitted.LecturerEvaluation == null)
-                            {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
-                                    הוגש
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
-                                    נבדק
-                                </span>
-
-                                <h5>
-                                    <span class="position-absolute top-100 start-50 translate-middle badge bg-dark">
-                                        ציון: @assignment.assignmentSubmitted.LecturerEvaluation
+                <p>מציג @numFrom ועד @numTo מתוך @assignmentsCount תוצאות</p>
+                <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
+                    @foreach (var assignment in assignments)
+                    {
+                        <div role="button" class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column" @onclick="@(() => navigationManager.NavigateTo("/student/assignment/" + assignment.Assignment?.Id))">
+                            <div class="card h-100 w-100 shadow-sm position-relative">
+                                @if (assignment.AssignmentSubmission == null)
+                                {
+                                    @if (assignment.Assignment?.EndSubmissionAt > DateTime.Now)
+                                    {
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                                            לא הוגש
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            נסגר
+                                        </span>
+                                    }
+                                }
+                                else if(assignment.AssignmentSubmission.LecturerEvaluation == null)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                                        הוגש
                                     </span>
-                                </h5>
-                            }
-                            <div class="card-body">
-                                <p class="card-title h4 mb-4">@assignment.assignment.Title</p>
-                                <div class="card-text">
-                                    <p class="h6 mb-4">כיתה: @assignment.currClass.Name</p>
-                                    <p class="mb-2"><small>תאריך פתיחה: @(assignment.assignment.StartSubmissionAt.ToLongDateHebrewString())</small></p>
-                                    <p class="mb-2"><small>תאריך אחרון: @(assignment.assignment.EndSubmissionAt.ToLongDateHebrewString())</small></p>
+                                }
+                                else
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                                        נבדק
+                                    </span>
+
+                                    <h5>
+                                        <span class="position-absolute top-100 start-50 translate-middle badge bg-dark">
+                                            ציון: @assignment.AssignmentSubmission.LecturerEvaluation
+                                        </span>
+                                    </h5>
+                                }
+                                <div class="card-body">
+                                    <p class="card-title h4 mb-4">@assignment.Assignment?.Title</p>
+                                    <div class="card-text">
+                                        <p class="h6">@assignment.Course?.Name</p>
+                                        <p class="h6 mb-4">@assignment.Class?.Name</p>
+                                        <p class="mb-2"><small>תאריך פתיחה: @(assignment.Assignment?.CreatedAt.ToLongDateHebrewString())</small></p>
+                                        <p class="mb-2"><small>תאריך אחרון: @(assignment.Assignment?.EndSubmissionAt.ToLongDateHebrewString())</small></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
-            <nav class="d-flex justify-content-center mt-4">
-                <Pagination UrlPagination="/student/assignments/" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
-            </nav>
+                    }
+                </div>
+                <nav class="d-flex justify-content-center mt-4">
+                    <Pagination UrlPagination="/student/assignments/" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
+                </nav>
+            }
+            else
+            {
+                <h4 class="text-muted">לא נמצאו משימות</h4>
+            }
         }
-        else
-        {
-            <h4 class="text-muted">לא נמצאו משימות</h4>
-        }
-    }
-</div>
+    </div>
+
+</RenderPermission>
 
 @code {
-    private List<(ClassEntity currClass, ClassAssignmentEntity assignment, ClassAssignmentSubmissionEntity? assignmentSubmitted)>? assignments;
+    private List<StudentAssignmentModel>? assignments;
 
     public ItemRef<long> CurrentPageItem { get; set; } = new(1);
     public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
@@ -95,22 +109,13 @@
                 var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
-                    var userClasses = await (from userClass in user.Classes select userClass.Class).ToAsyncEnumerable().ToListAsync();
-                    assignmentsCount = await (from currClass in userClasses
-                                              from assignment in currClass.Assignments
-                                              select assignment.Id).ToAsyncEnumerable().LongCountAsync();
+
+                    assignmentsCount = await dbContext.GetStudentAssignmentCountAsync(user.Id);
+
                     assignmentsPages = Convert.ToInt64(Math.Ceiling((double)assignmentsCount / assignmentsPerPage));
                     CurrentPagesCountItem.Item = assignmentsPages;
 
-
-                    using var secondDbContext = await campusContextFactory.CreateDbContextAsync();
-                    var currentTime = DateTime.Now;
-                    assignments = await (from currClass in userClasses
-                                      from assignment in currClass.Assignments
-                                      join assignmentSub in dbContext.ClassAssignmentSubmissions on new { X1= user.Id, X2= assignment.Id } equals new { X1= assignmentSub.StudentId, X2= assignmentSub.AssignmentId } into assignSub
-                                      from assignSubDef in assignSub.DefaultIfEmpty()
-                                      orderby assignment.CreatedAt descending
-                                      select (currClass, assignment, assignSubDef)).Skip((PageId - 1) * assignmentsPerPage).Take(assignmentsPerPage).ToAsyncEnumerable().ToListAsync();
+                    assignments = await dbContext.GetStudentAssignmentsPaginationAsync(user.Id, PageId, assignmentsPerPage);
                 }
             }
         }

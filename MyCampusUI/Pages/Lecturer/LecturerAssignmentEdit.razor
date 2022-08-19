@@ -1,0 +1,171 @@
+﻿@page "/lecturer/assignment/{AssignmentId:guid}/edit"
+
+@implements IDisposable
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationService
+@inject IAssignmentManagerService assignmentManager
+@inject IJSRuntime jsRuntime
+@inject IBundleFilesService bundleService
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Lecturer" RedirectIfInvalid="true">
+
+    <div class="container mb-4">
+        @if (assignment != null)
+        {
+            <h2 class="mb-4">עדכון משימה - @assignment.Title</h2>
+
+            <div class="row p-3">
+                <div class="col-12">
+                    <div class="card shadow-sm position-relative">
+                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigatePrevious())">
+                            חזור <span class="oi oi-arrow-left"></span>
+                        </button>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <h1 class="mb-3">פרטי המשימה</h1>
+                            </div>
+                            <div class="mt-4">
+                                <EditForm Context="AssignmentUpdateContext" OnValidSubmit="@OnAssignmentUpdate" Model="this.assignmentCreation">
+                                    <DataAnnotationsValidator />
+                                    <div class="form-group">
+                                        <input type="text" class="form-control mb-3" placeholder="כותרת" @bind="assignmentCreation.Title" minlength="10" maxlength="50" required/>
+
+                                        <textarea class="form-control mb-3" cols="30" placeholder="הוראות המשימה" rows="10" @bind="assignmentCreation.AssignmentText" required/>
+
+                                        <div class="mb-3">
+                                            <label for="startSubmissionDate">להגשה עד</label>
+                                            <input type="datetime-local" class="form-control" id="startSubmissionDate" @bind="assignmentCreation.EndSubmissionAt" step="1" required/>
+                                        </div>
+
+                                        <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-primary shadow-sm mt-3 mb-3" ButtonTask="@((e) => DownloadAttachedBundle())" disabled="@(assignment.AssignmentBundleId == null)">
+                                            <span>הורד קבצים שצורפו</span>
+                                        </AsyncLoadingButton>
+
+                                        <section>
+                                            <PrettyInputFile MaxMultipleFiles="20" RequestedUploadFiles="@requestedUploadFiles" />
+                                        </section>
+
+                                        <div class="form-group text-center mt-3 mb-3">
+                                            <button type="submit" class="btn btn-dark mb-1">
+                                                @if (inAction)
+                                                {
+                                                    <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+                                                }
+                                                <span>עדכון משימה</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </EditForm>
+                            </div>
+                            <div class="mt-2">
+                                <DismissibleAlert Message="@successMessage" Classes="alert-success m-2 shadow-sm"/>
+                                <DismissibleAlert Message="@warningMessage" Classes="alert-warning m-2 shadow-sm"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</RenderPermission>
+
+@code {
+    [Parameter] public Guid AssignmentId { get; set; }
+
+    private AssignmentCreationModel assignmentCreation = new();
+
+    private ItemRef<string> successMessage = new("");
+    private ItemRef<string> warningMessage = new("");
+
+    private bool inAction;
+    private ClassAssignmentEntity? assignment;
+
+    private CancellationTokenSource cancelTokenSource = new();
+
+    private ItemRef<IReadOnlyList<IBrowserFile>?> requestedUploadFiles = new(default);
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    assignment = await (from classEntity in dbContext.Classes
+                                        join assignment in dbContext.ClassAssignments on classEntity.Id equals assignment.ClassId
+                                        where assignment.Id == AssignmentId &&
+                                        classEntity.LecturerId == user.Id
+                                        select assignment).ToAsyncEnumerable().FirstOrDefaultAsync();
+
+                    if(assignment != null)
+                    {
+                        assignmentCreation.Title = assignment.Title;
+                        assignmentCreation.AssignmentText = assignment.AssignmentText;
+                        assignmentCreation.EndSubmissionAt = assignment.EndSubmissionAt;
+                    }
+                    else
+                    {
+                        navigationService.NavigatePrevious();
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task DownloadAttachedBundle()
+    {
+        if (assignment != null && assignment.AssignmentBundleId.HasValue)
+        {
+            using var stream = await bundleService.OpenBundleStreamAsync(assignment.AssignmentBundleId.Value);
+            if (stream != null)
+            {
+                using DotNetStreamReference streamRef = new DotNetStreamReference(stream);
+                string? blobUrl = await jsRuntime.CreateObjectBlobUrl(streamRef, FileTransferEnum.ApplicationZip);
+                if (blobUrl != null)
+                {
+                    await jsRuntime.DownloadBlob($"{assignment?.Title ?? "Unnamed assignment"}.zip", blobUrl);
+                    await jsRuntime.ClearBlobUrlObject(blobUrl);
+                }
+            }
+            else
+            {
+                successMessage.Item = "";
+                warningMessage.Item = "אירעה שגיאה, הקבצים לא נמצאו";
+            }
+        }
+    }
+
+    private async Task OnAssignmentUpdate()
+    {
+        if (!inAction)
+        {
+            try
+            {
+                inAction = true;
+                var assignmentEntity = await assignmentManager.CreateOrUpdateLecturerAssignment(AssignmentId, assignmentCreation, requestedUploadFiles.Item, null, cancelTokenSource.Token);
+                assignment = assignmentEntity;
+                warningMessage.Item = "";
+                successMessage.Item = "המשימה עודכנה בהצלחה";
+            }
+            catch
+            {
+                successMessage.Item = "";
+                warningMessage.Item = "אירעה שגיאה באת עדכון המשימה";
+            }
+            finally
+            {
+                inAction = false;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        cancelTokenSource.Cancel();
+    }
+}

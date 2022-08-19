@@ -98,15 +98,13 @@
                     errorMessage.Item = "";
                     successMessage.Item = "המשתמש נוצר בהצלחה, נותר רק לחכות לאישור הנהלת הקמפוס";
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.WriteLine(ex);
                     successMessage.Item = "";
                     errorMessage.Item = "אירעה שגיאה, יכול להיות שיש כבר משתמש עם אותם פרטים";
                 }
             }
             inAction = false;
-            StateHasChanged();
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyCampusData.Data;
 using MyCampusData.Entities;
+using MyCampusData.Enums;
 using MyCampusUI.Exceptions;
 using MyCampusUI.Interfaces.Services;
 using MyCampusUI.Models;
@@ -103,6 +104,95 @@ namespace MyCampusUI.Services
                     }
                 }
                 throw new AssignmentSubmitException("אירעה שגיאה כללית באת הגשת המשימה, נסו שוב מאוחר יותר");
+            }
+        }
+
+        public async Task<ClassAssignmentEntity> CreateOrUpdateLecturerAssignment(Guid assignmentId, AssignmentCreationModel assignmentCreation, IReadOnlyList<IBrowserFile>? requestedUploadFiles, Guid? classId = default, CancellationToken cancelToken = default)
+        {
+            using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
+            {
+                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                {
+                    var user = await dbContext.Users.FindAsync(UserId);
+                    if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)
+                    {
+                        var assignment = await dbContext.ClassAssignments.FindAsync(assignmentId);
+
+                        if (assignment != null)
+                        {
+                            assignment.Title = assignmentCreation.Title;
+                            assignment.AssignmentText = assignmentCreation.AssignmentText;
+                            assignment.EndSubmissionAt = assignmentCreation.EndSubmissionAt;
+
+                            if (requestedUploadFiles != null)
+                            {
+                                if (assignment.AssignmentBundleId.HasValue)
+                                {
+                                    var rewriteResult = await _bundleService.RewriteBundleAsync(assignment.AssignmentBundleId.Value, requestedUploadFiles.ToArray(), cancelToken);
+                                    if (!rewriteResult)
+                                    {
+                                        throw new AssignmentCreateUpdateException("אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 2MB והמשקל הכולל לא עולה על 20MB");
+                                    }
+                                }
+                                else
+                                {
+                                    var bundleId = await _bundleService.CreateBundleAsync(requestedUploadFiles.ToArray(), cancelToken);
+                                    if (bundleId.HasValue)
+                                    {
+                                        assignment.AssignmentBundleId = bundleId;
+                                    }
+                                    else
+                                    {
+                                        throw new AssignmentCreateUpdateException("אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 2MB והמשקל הכולל לא עולה על 20MB");
+                                    }
+                                }
+                            }
+
+                            dbContext.ClassAssignments.Update(assignment);
+                            await dbContext.SaveChangesAsync();
+                            return assignment;
+                        }
+                        else if(classId.HasValue)
+                        {
+                            var classEntity = await dbContext.Classes.FindAsync(classId.Value);
+
+                            if (classEntity != null)
+                            {
+
+                                var newAssignment = new ClassAssignmentEntity
+                                {
+                                    Title = assignmentCreation.Title,
+                                    AssignmentText = assignmentCreation.AssignmentText,
+                                    EndSubmissionAt = assignmentCreation.EndSubmissionAt,
+                                    ClassId = classEntity.Id
+                                };
+
+                                dbContext.ClassAssignments.Add(newAssignment);
+
+                                if (requestedUploadFiles != null)
+                                {
+                                    var bundleId = await _bundleService.CreateBundleAsync(requestedUploadFiles.ToArray(), cancelToken);
+                                    if (bundleId.HasValue)
+                                    {
+                                        newAssignment.AssignmentBundleId = bundleId;
+                                    }
+                                    else
+                                    {
+                                        throw new AssignmentCreateUpdateException("אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 2MB והמשקל הכולל לא עולה על 20MB");
+                                    }
+                                }
+
+                                await dbContext.SaveChangesAsync();
+                                return newAssignment;
+                            }
+                            else
+                            {
+                                throw new AssignmentCreateUpdateException("הכיתה שאליה אתם מנסים להוסיף את המשימה אינה קיימת");
+                            }
+                        }
+                    }
+                }
+                throw new AssignmentCreateUpdateException("אירעה שגיאה כללית באת עדכון המשימה");
             }
         }
     }

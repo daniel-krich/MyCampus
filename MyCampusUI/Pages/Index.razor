@@ -3,56 +3,62 @@
 @inject IAuthenticationStateService authenticationState
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
+
 <h1 class="text-center mb-5">
     @DayStateGreet, @authenticationState.DisposedUserEntity?.FirstName @authenticationState.DisposedUserEntity?.LastName
 </h1>
 
-<div class="container mb-5">
-    <h2 class="mb-4">הקורסים שלי</h2>
 
-    @if(classes != null)
-    {
-        if (classes.Count > 0)
+<RenderPermission Permissions="new[] { UserPermissionsEnum.Student, UserPermissionsEnum.Lecturer }">
+
+    <div class="container mb-5">
+        <h2 class="mb-4">כיתות/קורסים שלי</h2>
+
+        @if(classes != null)
         {
-            <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
-                @foreach (var currClass in classes)
-                {
-                    <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
-                        <div class="card w-100 h-100 shadow-sm">
-                            <div class="card-body">
-                                <p class="card-title h4 mb-2">@currClass.course.Name</p>
-                                <div class="card-text">
-                                    <p class="h6 text-muted mb-3">כיתה: @currClass.currentClass.Name</p>
-                                    <p class="">מרצה ראשי: @(currClass.classLecturer != null ? (currClass.classLecturer.FirstName + " " + currClass.classLecturer.LastName) : "לא שובץ")</p>
+            if (classes.Count > 0)
+            {
+                <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
+                    @foreach (var currClass in classes)
+                    {
+                        <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
+                            <div class="card w-100 h-100 shadow-sm">
+                                <div class="card-body">
+                                    <p class="card-title h4 mb-2">@currClass.course.Name</p>
+                                    <div class="card-text">
+                                        <p class="h6 text-muted mb-3">כיתה: @currClass.currentClass.Name</p>
+                                        <p class="">מרצה ראשי: @(currClass.classLecturer != null ? (currClass.classLecturer.FirstName + " " + currClass.classLecturer.LastName) : "לא שובץ")</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <h4 class="text-muted">כרגע ניראה שאין קורסים משויכים</h4>
+            }
         }
-        else
-        {
-            <h4 class="text-muted">כרגע ניראה שאין קורסים משויכים</h4>
-        }
-    }
-</div>
+    </div>
 
-<div class="container mb-5">
-    <h2 class="mb-4">המפגשים הקרובים</h2>
+    <div class="container mb-5">
+        <h2 class="mb-4">המפגשים הקרובים</h2>
 
-    @if(meetings != null)
-    {
-        if (meetings.Count > 0)
+        @if(meetings != null)
         {
-            <MeetingsCarouselSlider Meetings="meetings" />
+            if (meetings.Count > 0)
+            {
+                <MeetingsCarouselSlider Meetings="meetings" />
+            }
+            else
+            {
+                <h4 class="text-muted">אין מפגשים קרובים</h4>
+            }
         }
-        else
-        {
-            <h4 class="text-muted">אין מפגשים קרובים</h4>
-        }
-    }
-</div>
+    </div>
+
+</RenderPermission>
 
 @code {
     private string? DayStateGreet;
@@ -90,20 +96,34 @@
                 var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
-                    var userClasses = await (from userClass in user.Classes select userClass.Class).ToAsyncEnumerable().ToListAsync();
-                    using var secondDbContext = await campusContextFactory.CreateDbContextAsync();
-                    classes = await (from currClass in userClasses
-                                     from course in secondDbContext.Courses
-                                     where course.Id == currClass.CourseId
-                                     select (currClass, course, currClass.Lecturer)).ToAsyncEnumerable().ToListAsync();
+                    if (user.Permissions == UserPermissionsEnum.Lecturer)
+                    {
+                        classes = await (from lecturerClass in user.LecturingClasses
+                                         join course in dbContext.Courses on lecturerClass.CourseId equals course.Id
+                                         select (lecturerClass, course, lecturerClass.Lecturer)).ToAsyncEnumerable().ToListAsync();
 
-                    var currentTime = DateTime.Now;
-                    meetings = await (from myclass in classes
-                                      from meeting in dbContext.ClassMeetings
-                                      where myclass.currentClass.Id == meeting.ClassId &&
-                                      (meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2))
-                                      orderby meeting.StartAt ascending
-                                      select (meeting, myclass.currentClass, myclass.course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
+                        var currentTime = DateTime.Now;
+                        meetings = await (from lecturerClass in user.LecturingClasses
+                                          join course in dbContext.Courses on lecturerClass.CourseId equals course.Id
+                                          join meeting in dbContext.ClassMeetings on user.Id equals meeting.LecturerId
+                                          where meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2)
+                                          orderby meeting.StartAt ascending
+                                          select (meeting, lecturerClass, course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
+                    }
+                    else if(user.Permissions == UserPermissionsEnum.Student)
+                    {
+                        classes = await (from userClass in user.Classes
+                                         join classEntity in dbContext.Classes on userClass.ClassId equals classEntity.Id
+                                         join course in dbContext.Courses on classEntity.CourseId equals course.Id
+                                         select (classEntity, course, classEntity.Lecturer)).ToAsyncEnumerable().ToListAsync();
+
+                        var currentTime = DateTime.Now;
+                        meetings = await (from classAndCourse in classes
+                                          join meeting in dbContext.ClassMeetings on classAndCourse.currentClass.Id equals meeting.ClassId
+                                          where meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2)
+                                          orderby meeting.StartAt ascending
+                                          select (meeting, classAndCourse.currentClass, classAndCourse.course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
+                    }
                 }
             }
         }

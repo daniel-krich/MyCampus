@@ -27,6 +27,15 @@ h1:focus {
     outline: none;
 }
 
+.rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.space-pre-wrap {
+    white-space: pre-wrap;
+}
+
 a, .btn-link {
     color: #0071c1;
 }

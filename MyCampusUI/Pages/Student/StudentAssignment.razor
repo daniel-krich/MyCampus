@@ -9,104 +9,132 @@
 @inject IAssignmentManagerService assignmentManager
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
-<div class="container mb-4">
-    @if (assignment != null)
-    {
-        <h2 class="mb-4">משימה להגשה - @assignment.Title</h2>
+<RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
 
-        <div class="row p-3">
-            <div class="col-12">
-                <div class="card shadow-sm position-relative">
-                    <h5>
-                        @if (assignmentSubmission == null)
-                        {
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
-                                לא הוגש
-                            </span>
-                        }
-                        else if(assignmentSubmission.LecturerEvaluation == null)
-                        {
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
-                                הוגש
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
-                                נבדק
-                            </span>
-                        }
-                    </h5>
-                    <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigatePrevious())">
-                        חזור <span class="oi oi-arrow-left"></span>
-                    </button>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-lg-6 border-secondary task-border-divide">
-                                <div class="card-body">
-                                    <h1 class="mb-0 text-center">פרטי המשימה</h1>
-                                    <div class="mt-5">
-                                        @assignment.AssignmentText
+    <div class="container mb-4">
+        @if (assignment != null)
+        {
+            <h2 class="mb-4">משימה להגשה - @assignment.Title</h2>
+
+            <div class="row p-3">
+                <div class="col-12">
+                    <div class="card shadow-sm position-relative">
+                        <h5>
+                            @if (assignmentSubmission == null)
+                            {
+                                @if (assignment?.EndSubmissionAt > DateTime.Now)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                                        לא הוגש
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        נסגר
+                                    </span>
+                                }
+                            }
+                            else if(assignmentSubmission.LecturerEvaluation == null)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                                    הוגש
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                                    נבדק
+                                </span>
+                            }
+                        </h5>
+                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigatePrevious())">
+                            חזור <span class="oi oi-arrow-left"></span>
+                        </button>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-6 border-secondary task-border-divide">
+                                    <div class="card-body">
+                                        <h1 class="mb-0 text-center">פרטי המשימה</h1>
+                                        <div class="space-pre-wrap mt-5">
+                                            @assignment?.AssignmentText
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <h1 class="mb-3">פרטי הגשה</h1>
-                                    </div>
-                                    <div class="mt-4">
-                                        <EditForm Context="AssignmentSubmitContext" OnSubmit="@OnAssignmentSubmit" Model="this.assignmentSubmit">
-                                            <div class="form-group">
-                                                <textarea class="form-control" name="" id="" cols="30" rows="10" @bind="assignmentSubmit.SubmissionText"/>
-                                                <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-primary shadow-sm mt-3 mb-3" ButtonTask="@((e) => DownloadAttachedBundle())" disabled="@(assignmentSubmission?.AssignmentSubmissionBundleId == null)">
-                                                    <span>הורד קבצים שהוגשו</span>
-                                                </AsyncLoadingButton>
+                                <div class="col-lg-6">
+                                    <div class="card-body">
+                                        <div class="text-center">
+                                            <h1 class="mb-3">פרטי הגשה</h1>
+                                        </div>
+                                        <div class="mt-4">
+                                            <EditForm Context="AssignmentSubmitContext" OnSubmit="@OnAssignmentSubmit" Model="this.assignmentSubmit">
+                                                <div class="form-group">
+                                                    <textarea class="form-control" cols="30" rows="10" @bind="assignmentSubmit.SubmissionText"/>
 
-                                                @if (assignmentSubmission?.LecturerEvaluation == null)
-                                                {
-                                                    <section>
-                                                        <PrettyInputFile MaxMultipleFiles="20" RequestedUploadFiles="@requestedUploadFiles" />
-                                                    </section>
-                                                }
+                                                    <div class="row mt-3 mb-3">
+                                                        <div class="col col-lg-auto">
+                                                            <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-success shadow-sm" ButtonTask="@((e) => DownloadAttachedBundle(assignment?.AssignmentBundleId))" disabled="@(assignment?.AssignmentBundleId == null)">
+                                                                <span>הורד קבצים שצורפו למשימה</span>
+                                                            </AsyncLoadingButton>
+                                                        </div>
 
-                                                <div class="form-group text-center mt-3 mb-3">
-                                                    <button type="submit" class="btn btn-dark mb-1" disabled="@(assignmentSubmission?.LecturerEvaluation != null || inAction)">
-                                                        @if (inAction)
-                                                        {
-                                                            <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
-                                                        }
+                                                        <div class="col col-lg-auto">
+                                                            <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-primary shadow-sm" ButtonTask="@((e) => DownloadAttachedBundle(assignmentSubmission?.AssignmentSubmissionBundleId))" disabled="@(assignmentSubmission?.AssignmentSubmissionBundleId == null)">
+                                                                <span>הורד קבצים שהוגשו</span>
+                                                            </AsyncLoadingButton>
+                                                        </div>
 
-                                                        @if (assignmentSubmission == null)
-                                                        {
-                                                            <span>הגשת המשימה</span>
-                                                        }
-                                                        else if(assignmentSubmission.LecturerEvaluation == null)
-                                                        {
-                                                            <span>עדכון המשימה</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span>המשימה נבדקה</span>
-                                                        }
-                                                    </button>
-                                                </div>
-
-                                                @if (assignmentSubmission?.LecturerNotes != null)
-                                                {
-                                                    <div class="alert alert-primary" role="alert">
-                                                        <small>
-                                                            <span class="fw-bolder">הערות מרצה: </span>
-                                                            <span>@assignmentSubmission.LecturerNotes</span>
-                                                        </small>
                                                     </div>
-                                                }
-                                            </div>
-                                        </EditForm>
-                                    </div>
-                                    <div class="mt-2">
-                                        <DismissibleAlert Message="@successMessage" Classes="alert-success m-2 shadow-sm"/>
-                                        <DismissibleAlert Message="@warningMessage" Classes="alert-warning m-2 shadow-sm"/>
+
+                                                    @if (assignmentSubmission?.LecturerEvaluation == null && assignment?.EndSubmissionAt > DateTime.Now)
+                                                    {
+                                                        <section>
+                                                            <PrettyInputFile MaxMultipleFiles="20" RequestedUploadFiles="@requestedUploadFiles" />
+                                                        </section>
+                                                    }
+
+                                                    <div class="form-group text-center mt-3 mb-3">
+                                                        <button type="submit" class="btn btn-dark mb-1" disabled="@(assignmentSubmission?.LecturerEvaluation != null || inAction || assignment?.EndSubmissionAt < DateTime.Now)">
+                                                            @if (inAction)
+                                                            {
+                                                                <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+                                                            }
+
+                                                            @if(assignment?.EndSubmissionAt < DateTime.Now)
+                                                            {
+                                                                <span>המשימה נסגרה</span>
+                                                            }
+                                                            else if (assignmentSubmission == null)
+                                                            {
+                                                                <span>הגשת המשימה</span>
+                                                            }
+                                                            else if(assignmentSubmission.LecturerEvaluation == null)
+                                                            {
+                                                                <span>עדכון המשימה</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>המשימה נבדקה</span>
+                                                            }
+                                                        </button>
+                                                    </div>
+
+                                                    @if (assignmentSubmission?.LecturerNotes != null)
+                                                    {
+                                                        <div class="alert alert-primary" role="alert">
+                                                            <small>
+                                                                <span class="fw-bolder">הערות מרצה: </span>
+                                                                <span>@assignmentSubmission.LecturerNotes</span>
+                                                            </small>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </EditForm>
+                                        </div>
+                                        <div class="mt-2">
+                                            <DismissibleAlert Message="@successMessage" Classes="alert-success m-2 shadow-sm"/>
+                                            <DismissibleAlert Message="@warningMessage" Classes="alert-warning m-2 shadow-sm"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -114,9 +142,10 @@
                     </div>
                 </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+
+</RenderPermission>
 
 @code {
     [Parameter] public Guid AssignmentId { get; set; }
@@ -160,11 +189,11 @@
         }
     }
 
-    private async Task DownloadAttachedBundle()
+    private async Task DownloadAttachedBundle(Guid? bundleId)
     {
-        if (assignmentSubmission != null && assignmentSubmission.AssignmentSubmissionBundleId.HasValue)
+        if (bundleId.HasValue)
         {
-            using var stream = await bundleService.OpenBundleStreamAsync(assignmentSubmission.AssignmentSubmissionBundleId.Value);
+            using var stream = await bundleService.OpenBundleStreamAsync(bundleId.Value);
             if (stream != null)
             {
                 using DotNetStreamReference streamRef = new DotNetStreamReference(stream);

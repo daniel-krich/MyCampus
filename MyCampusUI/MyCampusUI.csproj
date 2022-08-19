@@ -18,8 +18,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-    <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +27,10 @@
   <ItemGroup>
     <Folder Include="Attributes\" />
     <Folder Include="Pages\Staff\" />
-    <Folder Include="Pages\Lecturer\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Shared/Navigation/*.razor.css" CssScope="inherit-scope" />
   </ItemGroup>
 
 </Project>

@@ -16,7 +16,6 @@ namespace MyCampusUI.Components
             if (Route != null)
             {
                 NavManager.NavigateTo(Route, Reload);
-                Console.WriteLine(Route);
             }
         }
     }
