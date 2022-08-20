@@ -90,5 +90,13 @@ namespace MyCampusData.Extensions
                           select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer })
                           .Skip((pageId - 1) * classesPerPage).Take(classesPerPage).ToAsyncEnumerable().ToListAsync();
         }
+
+        public static async Task<ClassModel?> GetLecturerClassAsync(this CampusContext ctx, Guid lecturerId, Guid classId)
+        {
+            return await (from classEntity in ctx.Classes
+                          join course in ctx.Courses on classEntity.CourseId equals course.Id
+                          where classEntity.LecturerId == lecturerId && classEntity.Id == classId
+                          select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer }).ToAsyncEnumerable().FirstOrDefaultAsync();
+        }
     }
 }

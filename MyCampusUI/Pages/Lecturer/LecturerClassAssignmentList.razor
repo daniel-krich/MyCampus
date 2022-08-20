@@ -20,6 +20,21 @@
             
                 <p>מציג @numFrom ועד @numTo מתוך @assignmentsCount תוצאות</p>
                 <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
+
+                    @if (PageId == 1)
+                    {
+                        <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
+                            <div class="card card-new-assignment h-100 w-100 position-relative">
+                                <div class="card-body">
+                                    <a class="d-flex justify-content-center align-items-center h-100 h3" href="@($"/lecturer/class/{classModel.Class?.Id}/assignment/create")">
+                                        <i class="fa-solid fa-plus ms-1"></i>
+                                        <span>משימה חדשה</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
                     @foreach (var assignment in assignments)
                     {
                         <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
@@ -35,8 +50,8 @@
                                 <div class="dropdown dropend position-absolute top-0 start-0">
                                   <button class="btn btn-sm btn-light" type="button" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
                                   <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
-                                    <li><NavLink class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/edit")" Match="NavLinkMatch.All" type="button">עריכת המשימה</NavLink></li>
-                                    <li><NavLink class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/submissions")" Match="NavLinkMatch.All" type="button">צפייה בהגשות</NavLink></li>
+                                    <li><a class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/edit")" type="button">עריכת המשימה</a></li>
+                                    <li><a class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/submissions")" type="button">צפייה בהגשות</a></li>
                                   </ul>
                                 </div>
                             </div>
@@ -63,7 +78,7 @@
     public ItemRef<long> CurrentPageItem { get; set; } = new(1);
     public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
 
-    private int assignmentsPerPage = 9;
+    private int assignmentsPerPage = 8;
     private int pagesBufferRange = 5;
 
     private long assignmentsPages;

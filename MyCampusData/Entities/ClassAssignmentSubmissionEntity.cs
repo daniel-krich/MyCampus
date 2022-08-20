@@ -16,8 +16,6 @@ namespace MyCampusData.Entities
         public virtual ClassAssignmentEntity Assignment { get; set; }
         [Required]
         public string SubmissionText { get; set; }
-        [MaxLength(255)]
-        public string SubmissionFileUrl { get; set; }
         public DateTime SubmittedAt { get; set; }
 #nullable enable
         [MaxLength(100)]

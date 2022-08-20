@@ -74,7 +74,6 @@ namespace MyCampusUI.Services
                                 {
                                     StudentId = user.Id,
                                     AssignmentId = assignment.Id,
-                                    SubmissionFileUrl = "https://none",
                                     SubmissionText = assignmentSubmit.SubmissionText,
                                     SubmittedAt = DateTime.Now
                                 };
@@ -107,7 +106,7 @@ namespace MyCampusUI.Services
             }
         }
 
-        public async Task<ClassAssignmentEntity> CreateOrUpdateLecturerAssignment(Guid assignmentId, AssignmentCreationModel assignmentCreation, IReadOnlyList<IBrowserFile>? requestedUploadFiles, Guid? classId = default, CancellationToken cancelToken = default)
+        public async Task<ClassAssignmentEntity> UpdateLecturerAssignment(Guid assignmentId, AssignmentCreationModel assignmentCreation, IReadOnlyList<IBrowserFile>? requestedUploadFiles, CancellationToken cancelToken = default)
         {
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
@@ -152,48 +151,56 @@ namespace MyCampusUI.Services
                             await dbContext.SaveChangesAsync();
                             return assignment;
                         }
-                        else if(classId.HasValue)
+                    }
+                }
+            }
+            throw new AssignmentCreateUpdateException("שגיאה באת עדכון המשימה, יכול להיות שהמשימה אינה קיימת, נסו שוב עוד כמה רגעים");
+        }
+
+        public async Task<ClassAssignmentEntity> CreateLecturerAssignment(Guid classId, AssignmentCreationModel assignmentCreation, IReadOnlyList<IBrowserFile>? requestedUploadFiles, CancellationToken cancelToken = default)
+        {
+            using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
+            {
+                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                {
+                    var user = await dbContext.Users.FindAsync(UserId);
+                    if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)
+                    {
+                        var classEntity = await dbContext.Classes.FindAsync(classId);
+
+                        if (classEntity != null)
                         {
-                            var classEntity = await dbContext.Classes.FindAsync(classId.Value);
 
-                            if (classEntity != null)
+                            var newAssignment = new ClassAssignmentEntity
                             {
+                                Title = assignmentCreation.Title,
+                                AssignmentText = assignmentCreation.AssignmentText,
+                                EndSubmissionAt = assignmentCreation.EndSubmissionAt,
+                                ClassId = classEntity.Id
+                            };
 
-                                var newAssignment = new ClassAssignmentEntity
+                            dbContext.ClassAssignments.Add(newAssignment);
+
+                            if (requestedUploadFiles != null)
+                            {
+                                var bundleId = await _bundleService.CreateBundleAsync(requestedUploadFiles.ToArray(), cancelToken);
+                                if (bundleId.HasValue)
                                 {
-                                    Title = assignmentCreation.Title,
-                                    AssignmentText = assignmentCreation.AssignmentText,
-                                    EndSubmissionAt = assignmentCreation.EndSubmissionAt,
-                                    ClassId = classEntity.Id
-                                };
-
-                                dbContext.ClassAssignments.Add(newAssignment);
-
-                                if (requestedUploadFiles != null)
-                                {
-                                    var bundleId = await _bundleService.CreateBundleAsync(requestedUploadFiles.ToArray(), cancelToken);
-                                    if (bundleId.HasValue)
-                                    {
-                                        newAssignment.AssignmentBundleId = bundleId;
-                                    }
-                                    else
-                                    {
-                                        throw new AssignmentCreateUpdateException("אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 2MB והמשקל הכולל לא עולה על 20MB");
-                                    }
+                                    newAssignment.AssignmentBundleId = bundleId;
                                 }
+                                else
+                                {
+                                    throw new AssignmentCreateUpdateException("אירעה שגיאה באת העלאת הקבצים, בדקו שכל קובץ שוקל עד 2MB והמשקל הכולל לא עולה על 20MB");
+                                }
+                            }
 
-                                await dbContext.SaveChangesAsync();
-                                return newAssignment;
-                            }
-                            else
-                            {
-                                throw new AssignmentCreateUpdateException("הכיתה שאליה אתם מנסים להוסיף את המשימה אינה קיימת");
-                            }
+                            await dbContext.SaveChangesAsync();
+                            return newAssignment;
                         }
                     }
                 }
-                throw new AssignmentCreateUpdateException("אירעה שגיאה כללית באת עדכון המשימה");
             }
+            throw new AssignmentCreateUpdateException("שגיאה באת יצירת המשימה, יכול להיות שהכיתה אינה קיימת, נסו שוב עוד כמה רגעים");
         }
     }
 }

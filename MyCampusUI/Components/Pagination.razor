@@ -2,9 +2,9 @@
 
 <ul class="pagination pagination-purple p-0">
     <li class="page-item" disabled="@(CurrentPageItem.Item == 1)">
-        <NavLink class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item-1}")">
+        <a class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item-1}")">
             <span aria-hidden="true">&laquo;</span>
-        </NavLink>
+        </a>
     </li>
     @{
         var pagesBufferedEnd = (CurrentPageItem.Item + PagesBufferRange) > CurrentPagesCountItem.Item ? CurrentPagesCountItem.Item : (CurrentPageItem.Item + PagesBufferRange);
@@ -14,15 +14,15 @@
     {
         var pageLoopIndex = i;
         <li class="@($"page-item" + (pageLoopIndex == CurrentPageItem.Item ? " active": null))">
-            <NavLink class="page-link" href="@($"{UrlPagination}{pageLoopIndex}")">
+            <a class="page-link" href="@($"{UrlPagination}{pageLoopIndex}")">
                 <span aria-hidden="true">@pageLoopIndex</span>
-            </NavLink>
+            </a>
         </li>
     }
     <li class="page-item" disabled="@(CurrentPageItem.Item == CurrentPagesCountItem.Item)">
-        <NavLink class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item+1}")">
+        <a class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item+1}")">
             <span aria-hidden="true">&raquo;</span>
-        </NavLink>
+        </a>
     </li>
 </ul>
 

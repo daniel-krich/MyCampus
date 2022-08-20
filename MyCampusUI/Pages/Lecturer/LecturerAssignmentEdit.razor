@@ -147,7 +147,7 @@
             try
             {
                 inAction = true;
-                var assignmentEntity = await assignmentManager.CreateOrUpdateLecturerAssignment(AssignmentId, assignmentCreation, requestedUploadFiles.Item, null, cancelTokenSource.Token);
+                var assignmentEntity = await assignmentManager.UpdateLecturerAssignment(AssignmentId, assignmentCreation, requestedUploadFiles.Item, cancelTokenSource.Token);
                 assignment = assignmentEntity;
                 warningMessage.Item = "";
                 successMessage.Item = "המשימה עודכנה בהצלחה";
