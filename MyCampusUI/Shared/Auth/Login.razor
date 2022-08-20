@@ -25,10 +25,10 @@
         <span>התחברות</span>
     </button>
 </EditForm>
-<DismissibleAlert Message="@errorMessage" Classes="alert-warning shadow-sm"/>
+<DismissibleAlert @ref="alert" class="shadow-sm"/>
 
 @code {
-    private ItemRef<string> errorMessage = new("");
+    private DismissibleAlert? alert;
     private LoginModel login = new();
     private bool inAction;
     private async Task SubmitAsync()
@@ -44,12 +44,12 @@
             }
             catch (UnapprovedUserException)
             {
-                errorMessage.Item = "המשתמש טרם אושר בידי הנהלת הקמפוס";
+                alert?.ShowWarning("המשתמש טרם אושר בידי הנהלת הקמפוס");
                 inAction = false;
             }
             catch(InvalidCredentialsException)
             {
-                errorMessage.Item = "המשתמש או הסיסמה אינם נכונים";
+                alert?.ShowError("המשתמש או הסיסמה אינם נכונים");
                 inAction = false;
             }
         }

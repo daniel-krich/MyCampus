@@ -44,7 +44,7 @@
                                         </AsyncLoadingButton>
 
                                         <section>
-                                            <PrettyInputFile MaxMultipleFiles="20" RequestedUploadFiles="@requestedUploadFiles" />
+                                            <PrettyInputFile @ref="inputFile" MaxMultipleFiles="20"/>
                                         </section>
 
                                         <div class="form-group text-center mt-3 mb-3">
@@ -60,8 +60,7 @@
                                 </EditForm>
                             </div>
                             <div class="mt-2">
-                                <DismissibleAlert Message="@successMessage" Classes="alert-success m-2 shadow-sm"/>
-                                <DismissibleAlert Message="@warningMessage" Classes="alert-warning m-2 shadow-sm"/>
+                                <DismissibleAlert @ref="alert" class="m-2 shadow-sm"/>
                             </div>
                         </div>
                     </div>
@@ -77,15 +76,14 @@
 
     private AssignmentCreationModel assignmentCreation = new();
 
-    private ItemRef<string> successMessage = new("");
-    private ItemRef<string> warningMessage = new("");
+    private DismissibleAlert? alert;
 
     private bool inAction;
     private ClassAssignmentEntity? assignment;
 
     private CancellationTokenSource cancelTokenSource = new();
 
-    private ItemRef<IReadOnlyList<IBrowserFile>?> requestedUploadFiles = new(default);
+    private PrettyInputFile? inputFile;
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,8 +132,7 @@
             }
             else
             {
-                successMessage.Item = "";
-                warningMessage.Item = "אירעה שגיאה, הקבצים לא נמצאו";
+                alert?.ShowWarning("אירעה שגיאה, הקבצים לא נמצאו");
             }
         }
     }
@@ -147,20 +144,17 @@
             try
             {
                 inAction = true;
-                var assignmentEntity = await assignmentManager.UpdateLecturerAssignment(AssignmentId, assignmentCreation, requestedUploadFiles.Item, cancelTokenSource.Token);
+                var assignmentEntity = await assignmentManager.UpdateLecturerAssignment(AssignmentId, assignmentCreation, inputFile?.RequestedUploadFiles, cancelTokenSource.Token);
                 assignment = assignmentEntity;
-                warningMessage.Item = "";
-                successMessage.Item = "המשימה עודכנה בהצלחה";
+                alert?.ShowSuccess("המשימה עודכנה בהצלחה");
             }
             catch(AssignmentCreateUpdateException ex)
             {
-                successMessage.Item = "";
-                warningMessage.Item = ex.Message;
+                alert?.ShowWarning(ex.Message);
             }
             catch
             {
-                successMessage.Item = "";
-                warningMessage.Item = "אירעה שגיאה באת עדכון המשימה";
+                alert?.ShowWarning("אירעה שגיאה באת עדכון המשימה");
             }
             finally
             {

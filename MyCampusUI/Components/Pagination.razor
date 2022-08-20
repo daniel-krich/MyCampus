@@ -1,26 +1,24 @@
-﻿@implements IDisposable
-
-<ul class="pagination pagination-purple p-0">
-    <li class="page-item" disabled="@(CurrentPageItem.Item == 1)">
-        <a class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item-1}")">
+﻿<ul class="pagination pagination-dark p-0">
+    <li class="page-item" disabled="@(CurrentPage == 1)">
+        <a class="page-link" href="@($"{UrlPagination}{CurrentPage-1}")">
             <span aria-hidden="true">&laquo;</span>
         </a>
     </li>
     @{
-        var pagesBufferedEnd = (CurrentPageItem.Item + PagesBufferRange) > CurrentPagesCountItem.Item ? CurrentPagesCountItem.Item : (CurrentPageItem.Item + PagesBufferRange);
-        var pagesBufferedStart = (CurrentPageItem.Item - PagesBufferRange) <= 0 ? 1 : (CurrentPageItem.Item - PagesBufferRange);
+        var pagesBufferedEnd = (CurrentPage + PagesBufferRange) > CurrentPagesCount ? CurrentPagesCount : (CurrentPage + PagesBufferRange);
+        var pagesBufferedStart = (CurrentPage - PagesBufferRange) <= 0 ? 1 : (CurrentPage - PagesBufferRange);
     }
     @for(long i = pagesBufferedStart; i <= pagesBufferedEnd; i++)
     {
         var pageLoopIndex = i;
-        <li class="@($"page-item" + (pageLoopIndex == CurrentPageItem.Item ? " active": null))">
+        <li class="@($"page-item" + (pageLoopIndex == CurrentPage ? " active": null))">
             <a class="page-link" href="@($"{UrlPagination}{pageLoopIndex}")">
                 <span aria-hidden="true">@pageLoopIndex</span>
             </a>
         </li>
     }
-    <li class="page-item" disabled="@(CurrentPageItem.Item == CurrentPagesCountItem.Item)">
-        <a class="page-link" href="@($"{UrlPagination}{CurrentPageItem.Item+1}")">
+    <li class="page-item" disabled="@(CurrentPage == CurrentPagesCount)">
+        <a class="page-link" href="@($"{UrlPagination}{CurrentPage+1}")">
             <span aria-hidden="true">&raquo;</span>
         </a>
     </li>
@@ -30,23 +28,18 @@
     [Parameter] public int PagesBufferRange { get; set; } = 5;
     [Parameter] public string UrlPagination { get; set; } = "";
 
-    [Parameter] public ItemRef<long> CurrentPageItem { get; set; } = new(1);
-    [Parameter] public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
+    [Parameter] public long CurrentPage { get; set; }
+    [Parameter] public long CurrentPagesCount { get; set; }
 
-    protected override void OnInitialized()
+    public void SetCurrentPage(long num)
     {
-        CurrentPageItem.ItemChanged += OnPaginationChanged;
-        CurrentPagesCountItem.ItemChanged += OnPaginationChanged;
-    }
-
-    private void OnPaginationChanged(object? sender, EventArgs args)
-    {
+        CurrentPage = num;
         StateHasChanged();
     }
 
-    public void Dispose()
+    public void SetPagesCount(long count)
     {
-        CurrentPageItem.ItemChanged -= OnPaginationChanged;
-        CurrentPagesCountItem.ItemChanged -= OnPaginationChanged;
+        CurrentPagesCount = count;
+        StateHasChanged();
     }
 }

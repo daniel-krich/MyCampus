@@ -9,6 +9,6 @@ namespace MyCampusUI.Models
         [Required]
         public string AssignmentText { get; set; } = "";
         [Required]
-        public DateTime EndSubmissionAt { get; set; } = DateTime.Now.Date.AddDays(7).Add(new TimeSpan(23, 59, 0));
+        public DateTime EndSubmissionAt { get; set; } = DateTime.Now.Date.AddDays(7).Add(new TimeSpan(23, 59, 59));
     }
 }

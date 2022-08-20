@@ -89,7 +89,7 @@
                                                     @if (assignmentSubmission?.LecturerEvaluation == null && assignment?.EndSubmissionAt > DateTime.Now)
                                                     {
                                                         <section>
-                                                            <PrettyInputFile MaxMultipleFiles="20" RequestedUploadFiles="@requestedUploadFiles" />
+                                                            <PrettyInputFile @ref="inputFile" MaxMultipleFiles="20" />
                                                         </section>
                                                     }
 
@@ -132,8 +132,7 @@
                                             </EditForm>
                                         </div>
                                         <div class="mt-2">
-                                            <DismissibleAlert Message="@successMessage" Classes="alert-success m-2 shadow-sm"/>
-                                            <DismissibleAlert Message="@warningMessage" Classes="alert-warning m-2 shadow-sm"/>
+                                            <DismissibleAlert @ref="alert" class="m-2 shadow-sm"/>
                                         </div>
                                     </div>
                                 </div>
@@ -150,15 +149,14 @@
 @code {
     [Parameter] public Guid AssignmentId { get; set; }
     private AssignmentSubmitModel assignmentSubmit = new();
-    private ItemRef<string> successMessage = new("");
-    private ItemRef<string> warningMessage = new("");
+    private DismissibleAlert? alert;
     private bool inAction;
     private ClassAssignmentEntity? assignment;
     private ClassAssignmentSubmissionEntity? assignmentSubmission;
 
     private CancellationTokenSource cancelTokenSource = new();
 
-    private ItemRef<IReadOnlyList<IBrowserFile>?> requestedUploadFiles = new(default);
+    private PrettyInputFile? inputFile;
 
     protected override async Task OnInitializedAsync()
     {
@@ -206,8 +204,7 @@
             }
             else
             {
-                successMessage.Item = "";
-                warningMessage.Item = "אירעה שגיאה, הקבצים לא נמצאו";
+                alert?.ShowWarning("אירעה שגיאה, הקבצים לא נמצאו");
             }
         }
     }
@@ -219,20 +216,17 @@
             try
             {
                 inAction = true;
-                var assignmentSubmitEntity = await assignmentManager.SubmitAssignment(AssignmentId, assignmentSubmit, requestedUploadFiles.Item, cancelTokenSource.Token);
+                var assignmentSubmitEntity = await assignmentManager.SubmitAssignment(AssignmentId, assignmentSubmit, inputFile?.RequestedUploadFiles, cancelTokenSource.Token);
                 assignmentSubmission = assignmentSubmitEntity;
-                warningMessage.Item = "";
-                successMessage.Item = "המשימה הוגשה/עודכנה בהצלחה";
+                alert?.ShowSuccess("המשימה הוגשה/עודכנה בהצלחה");
             }
             catch(AssignmentSubmitException ex)
             {
-                successMessage.Item = "";
-                warningMessage.Item = ex.Message;
+                alert?.ShowWarning(ex.Message);
             }
             catch
             {
-                successMessage.Item = "";
-                warningMessage.Item = "אירעה שגיאה באת הגשת המשימה";
+                alert?.ShowWarning("אירעה שגיאה באת הגשת המשימה");
             }
             finally
             {

@@ -59,7 +59,7 @@
                     }
                 </div>
                 <nav class="d-flex justify-content-center mt-4">
-                    <Pagination UrlPagination="@($"/lecturer/class/{ClassId}/assignments/")" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
+                    <Pagination @ref="classAssignmentPagination" UrlPagination="@($"/lecturer/class/{ClassId}/assignments/")" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="assignmentsPages" />
                 </nav>
             }
             else
@@ -75,8 +75,7 @@
     private ClassModel? classModel;
     private List<ClassAssignmentModel>? assignments;
 
-    public ItemRef<long> CurrentPageItem { get; set; } = new(1);
-    public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
+    private Pagination? classAssignmentPagination;
 
     private int assignmentsPerPage = 8;
     private int pagesBufferRange = 5;
@@ -90,7 +89,8 @@
     protected override async Task OnParametersSetAsync()
     {
         PageId = PageId <= 0 ? 1 : PageId;
-        CurrentPageItem.Item = PageId;
+
+        classAssignmentPagination?.SetCurrentPage(PageId);
 
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
@@ -109,7 +109,8 @@
                         assignmentsCount = await dbContext.GetClassAssignmentsCountAsync(ClassId);
 
                         assignmentsPages = Convert.ToInt64(Math.Ceiling((double)assignmentsCount / assignmentsPerPage));
-                        CurrentPagesCountItem.Item = assignmentsPages;
+
+                        classAssignmentPagination?.SetPagesCount(assignmentsPages);
 
                         assignments = await dbContext.GetClassAssignmentsPaginationAsync(ClassId, PageId, assignmentsPerPage);
                     }
@@ -120,6 +121,5 @@
                 }
             }
         }
-        CurrentPageItem.Item = PageId;
     }
 }

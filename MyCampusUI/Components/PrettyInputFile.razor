@@ -2,9 +2,9 @@
     <InputFile class="DropFile" id="file-upload" OnChange="@UploadFilesRequest" multiple />
     <div class="h6 text-center w-100 m-0">
         <span>גרור קבצים או לחץ</span>
-        @if(RequestedUploadFiles.Item != null)
+        @if(RequestedUploadFiles != null)
         {
-            <span class="me-1">(@RequestedUploadFiles.Item.Count)</span>
+            <span class="me-1">(@RequestedUploadFiles.Count)</span>
         }
         <div class="m-0">
             <small class="text-muted">מוגבל ל-@MaxMultipleFiles קבצים</small>
@@ -14,10 +14,11 @@
 
 @code {
     [Parameter] public int MaxMultipleFiles { get; set; } = 20;
-    [Parameter] public ItemRef<IReadOnlyList<IBrowserFile>?> RequestedUploadFiles { get; set; } = new(default);
+
+    public IReadOnlyList<IBrowserFile>? RequestedUploadFiles { get; private set; }
 
     private void UploadFilesRequest(InputFileChangeEventArgs e)
     {
-        RequestedUploadFiles.Item = e.GetMultipleFiles(MaxMultipleFiles);
+        RequestedUploadFiles = e.GetMultipleFiles(MaxMultipleFiles);
     }
 }

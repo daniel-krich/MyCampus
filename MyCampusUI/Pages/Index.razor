@@ -24,10 +24,10 @@
                         <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
                             <div class="card w-100 h-100 shadow-sm">
                                 <div class="card-body">
-                                    <p class="card-title h4 mb-2">@currClass.course.Name</p>
+                                    <p class="card-title h4 mb-2">@currClass.Course?.Name</p>
                                     <div class="card-text">
-                                        <p class="h6 text-muted mb-3">כיתה: @currClass.currentClass.Name</p>
-                                        <p class="">מרצה ראשי: @(currClass.classLecturer != null ? (currClass.classLecturer.FirstName + " " + currClass.classLecturer.LastName) : "לא שובץ")</p>
+                                        <p class="h6 text-muted mb-3">כיתה: @currClass.Class?.Name</p>
+                                        <p class="">מרצה ראשי: @(currClass.Lecturer != null ? (currClass.Lecturer.FirstName + " " + currClass.Lecturer.LastName) : "לא שובץ")</p>
                                     </div>
                                 </div>
                             </div>
@@ -63,8 +63,8 @@
 @code {
     private string? DayStateGreet;
 
-    private List<(ClassEntity currentClass, CourseEntity course, UserEntity? classLecturer)>? classes;
-    private List<(ClassMeetingEntity meeting, ClassEntity currentClass, CourseEntity course, UserEntity meetingLecturer)>? meetings;
+    private List<ClassModel>? classes;
+    private List<MeetingModel>? meetings;
 
     protected override void OnInitialized()
     {
@@ -100,7 +100,7 @@
                     {
                         classes = await (from lecturerClass in user.LecturingClasses
                                          join course in dbContext.Courses on lecturerClass.CourseId equals course.Id
-                                         select (lecturerClass, course, lecturerClass.Lecturer)).ToAsyncEnumerable().ToListAsync();
+                                         select new ClassModel { Class = lecturerClass, Course = course, Lecturer = lecturerClass.Lecturer }).ToAsyncEnumerable().ToListAsync();
 
                         var currentTime = DateTime.Now;
                         meetings = await (from lecturerClass in user.LecturingClasses
@@ -108,21 +108,21 @@
                                           join meeting in dbContext.ClassMeetings on user.Id equals meeting.LecturerId
                                           where meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2)
                                           orderby meeting.StartAt ascending
-                                          select (meeting, lecturerClass, course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
+                                          select new MeetingModel { Meeting = meeting, Class = lecturerClass, Course = course, Lecturer = meeting.Lecturer}).Take(5).ToAsyncEnumerable().ToListAsync();
                     }
                     else if(user.Permissions == UserPermissionsEnum.Student)
                     {
                         classes = await (from userClass in user.Classes
                                          join classEntity in dbContext.Classes on userClass.ClassId equals classEntity.Id
                                          join course in dbContext.Courses on classEntity.CourseId equals course.Id
-                                         select (classEntity, course, classEntity.Lecturer)).ToAsyncEnumerable().ToListAsync();
+                                         select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer }).ToAsyncEnumerable().ToListAsync();
 
                         var currentTime = DateTime.Now;
                         meetings = await (from classAndCourse in classes
-                                          join meeting in dbContext.ClassMeetings on classAndCourse.currentClass.Id equals meeting.ClassId
+                                          join meeting in dbContext.ClassMeetings on classAndCourse.Class?.Id equals meeting.ClassId
                                           where meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2)
                                           orderby meeting.StartAt ascending
-                                          select (meeting, classAndCourse.currentClass, classAndCourse.course, meeting.Lecturer)).Take(5).ToAsyncEnumerable().ToListAsync();
+                                          select new MeetingModel { Meeting = meeting, Class = classAndCourse.Class, Course = classAndCourse.Course, Lecturer = meeting.Lecturer}).Take(5).ToAsyncEnumerable().ToListAsync();
                     }
                 }
             }

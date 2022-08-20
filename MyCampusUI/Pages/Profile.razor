@@ -61,15 +61,13 @@
                 <span>עדכון פרטים</span>
             </button>
         </EditForm>
-        <DismissibleAlert Message="@errorMessage" Classes="alert-warning m-2 shadow-sm"/>
-        <DismissibleAlert Message="@successMessage" Classes="alert-success m-2 shadow-sm"/>
+        <DismissibleAlert @ref="alert" class="m-2 shadow-sm"/>
     </div>
 </div>
 
 @code {
     private UpdateProfileModel updateProfile = new();
-    private ItemRef<string> errorMessage = new("");
-    private ItemRef<string> successMessage = new("");
+    private DismissibleAlert? alert;
     private bool inAction;
 
     protected override async Task OnInitializedAsync()
@@ -123,8 +121,7 @@
                             }
                             else
                             {
-                                successMessage.Item = "";
-                                errorMessage.Item = "הסיסמה הנוכחית אינה נכונה";
+                                alert?.ShowError("הסיסמה הנוכחית אינה נכונה");
                                 inAction = false;
                                 return;
                             }
@@ -137,15 +134,13 @@
                         user.Gender = updateProfile.Gender ?? GenderEnum.Other;
                         dbContext.Users.Update(user);
                         await dbContext.SaveChangesAsync();
-                        errorMessage.Item = "";
-                        successMessage.Item = "שינוי הפרטים עבר בהצלחה";
+                        alert?.ShowSuccess("שינוי הפרטים עבר בהצלחה");
 
                         authenticationState.DisposedUserEntity = user; // update account state
                     }
                     catch
                     {
-                        successMessage.Item = "";
-                        errorMessage.Item = "אירעה שגיאה, יכול להיות שיש כבר משתמש עם אותו דוא\"ל";
+                        alert?.ShowError("אירעה שגיאה, יכול להיות שיש כבר משתמש עם אותו דוא\"ל");
                     }
                 }
             }

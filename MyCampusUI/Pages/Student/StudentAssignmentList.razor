@@ -8,7 +8,7 @@
 <RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
 
     <div class="container mb-4">
-        <h2 class="mb-4">כל המשימות</h2>
+        <h2 class="mb-4">כל המשימות שלי</h2>
 
         @if(assignments != null)
         {
@@ -71,7 +71,7 @@
                     }
                 </div>
                 <nav class="d-flex justify-content-center mt-4">
-                    <Pagination UrlPagination="/student/assignments/" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
+                    <Pagination @ref="assignmentPagination" UrlPagination="/student/assignments/" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="assignmentsPages" />
                 </nav>
             }
             else
@@ -86,8 +86,7 @@
 @code {
     private List<StudentAssignmentModel>? assignments;
 
-    public ItemRef<long> CurrentPageItem { get; set; } = new(1);
-    public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
+    private Pagination? assignmentPagination;
 
     private int assignmentsPerPage = 9;
     private int pagesBufferRange = 5;
@@ -100,7 +99,8 @@
     protected override async Task OnParametersSetAsync()
     {
         PageId = PageId <= 0 ? 1 : PageId;
-        CurrentPageItem.Item = PageId;
+
+        assignmentPagination?.SetCurrentPage(PageId);
 
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
@@ -113,13 +113,14 @@
                     assignmentsCount = await dbContext.GetStudentAssignmentCountAsync(user.Id);
 
                     assignmentsPages = Convert.ToInt64(Math.Ceiling((double)assignmentsCount / assignmentsPerPage));
-                    CurrentPagesCountItem.Item = assignmentsPages;
+
+                    assignmentPagination?.SetPagesCount(assignmentsPages);
 
                     assignments = await dbContext.GetStudentAssignmentsPaginationAsync(user.Id, PageId, assignmentsPerPage);
                 }
             }
         }
-        CurrentPageItem.Item = PageId;
+        
     }
 }
 

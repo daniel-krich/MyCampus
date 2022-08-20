@@ -7,7 +7,7 @@
 <RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
 
     <div class="container mb-4">
-        <h2 class="mb-4">כל המפגשים</h2>
+        <h2 class="mb-4">כל המפגשים שלי</h2>
 
         @if(meetings != null)
         {
@@ -57,7 +57,7 @@
                         </div>
                     }
                     <nav class="d-flex justify-content-center mt-4">
-                        <Pagination UrlPagination="/student/meetings/" PagesBufferRange="@pagesBufferRange" CurrentPageItem="CurrentPageItem" CurrentPagesCountItem="CurrentPagesCountItem" />
+                        <Pagination @ref="meetingPagination" UrlPagination="/student/meetings/" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="meetingsPages" />
                     </nav>
                 </div>
             }
@@ -73,8 +73,7 @@
 @code {
     private List<MeetingModel>? meetings;
 
-    public ItemRef<long> CurrentPageItem { get; set; } = new(1);
-    public ItemRef<long> CurrentPagesCountItem { get; set; } = new(1);
+    private Pagination? meetingPagination;
 
     private int meetingsPerPage = 10;
     private int pagesBufferRange = 5;
@@ -87,7 +86,8 @@
     protected override async Task OnParametersSetAsync()
     {
         PageId = PageId <= 0 ? 1 : PageId;
-        CurrentPageItem.Item = PageId;
+
+        meetingPagination?.SetCurrentPage(PageId);
 
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
@@ -100,12 +100,11 @@
 
                     meetingsPages = Convert.ToInt64(Math.Ceiling((double)meetingsCount / meetingsPerPage));
 
-                    CurrentPagesCountItem.Item = meetingsPages;
+                    meetingPagination?.SetPagesCount(meetingsPages);
 
                     meetings = await dbContext.GetStudentMeetingsPaginationAsync(user.Id, PageId, meetingsPerPage);
                 }
             }
         }
-        CurrentPageItem.Item = PageId;
     }
 }

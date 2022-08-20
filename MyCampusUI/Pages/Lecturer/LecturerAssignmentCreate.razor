@@ -50,7 +50,7 @@
                                             </div>
 
                                             <section>
-                                                <PrettyInputFile MaxMultipleFiles="20" RequestedUploadFiles="@requestedUploadFiles" />
+                                                <PrettyInputFile @ref="inputFile" MaxMultipleFiles="20" />
                                             </section>
 
                                             <div class="form-group text-center mt-3 mb-3">
@@ -66,7 +66,7 @@
                                     </EditForm>
                                 </div>
                                 <div class="mt-2">
-                                    <DismissibleAlert Message="@warningMessage" Classes="alert-warning m-2 shadow-sm"/>
+                                    <DismissibleAlert @ref="alert" class="m-2 shadow-sm"/>
                                 </div>
                             }
                         </div>
@@ -87,13 +87,13 @@
 
     private AssignmentCreationModel assignmentCreation = new();
 
-    private ItemRef<string> warningMessage = new("");
+    private DismissibleAlert? alert;
 
     private bool inAction;
 
     private CancellationTokenSource cancelTokenSource = new();
 
-    private ItemRef<IReadOnlyList<IBrowserFile>?> requestedUploadFiles = new(default);
+    private PrettyInputFile? inputFile;
 
     protected override async Task OnInitializedAsync()
     {
@@ -124,17 +124,17 @@
                 if (classModel != null && classModel.Class != null)
                 {
                     inAction = true;
-                    var assignmentEntity = await assignmentManager.CreateLecturerAssignment(classModel.Class.Id, assignmentCreation, requestedUploadFiles.Item, cancelTokenSource.Token);
+                    var assignmentEntity = await assignmentManager.CreateLecturerAssignment(classModel.Class.Id, assignmentCreation, inputFile?.RequestedUploadFiles, cancelTokenSource.Token);
                     assignmentCreated = true;
                 }
             }
             catch(AssignmentCreateUpdateException ex)
             {
-                warningMessage.Item = ex.Message;
+                alert?.ShowWarning(ex.Message);
             }
             catch
             {
-                warningMessage.Item = "אירעה שגיאה באת עדכון המשימה";
+                alert?.ShowWarning("אירעה שגיאה באת עדכון המשימה");
             }
             finally
             {

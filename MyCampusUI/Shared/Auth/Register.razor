@@ -59,12 +59,10 @@
         <span>הרשמה</span>
     </button>
 </EditForm>
-<DismissibleAlert Message="@errorMessage" Classes="alert-warning shadow-sm"/>
-<DismissibleAlert Message="@successMessage" Classes="alert-success shadow-sm"/>
+<DismissibleAlert @ref="@alert" class="shadow-sm"/>
 
 @code {
-    private ItemRef<string> errorMessage = new("");
-    private ItemRef<string> successMessage = new("");
+    private DismissibleAlert? alert;
     private RegisterModel register = new();
     private bool inAction;
     private async Task SubmitAsync()
@@ -95,13 +93,11 @@
 
                     dbContext.Users.Add(user);
                     await dbContext.SaveChangesAsync();
-                    errorMessage.Item = "";
-                    successMessage.Item = "המשתמש נוצר בהצלחה, נותר רק לחכות לאישור הנהלת הקמפוס";
+                    alert?.ShowSuccess("המשתמש נוצר בהצלחה, נותר רק לחכות לאישור הנהלת הקמפוס");
                 }
                 catch (Exception)
                 {
-                    successMessage.Item = "";
-                    errorMessage.Item = "אירעה שגיאה, יכול להיות שיש כבר משתמש עם אותם פרטים";
+                    alert?.ShowError("אירעה שגיאה, יכול להיות שיש כבר משתמש עם אותם פרטים");
                 }
             }
             inAction = false;

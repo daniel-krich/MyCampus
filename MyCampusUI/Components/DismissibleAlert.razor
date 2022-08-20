@@ -1,33 +1,47 @@
-﻿@implements IDisposable
-
-@if(Message?.Item?.Length > 0)
+﻿@if(message?.Length > 0)
 {
-    <div>
-        <div class="@($"alert {Classes} alert-dismissible")" role="alert">
-            @Message.Item
-            <button type="button" @onclick=@(() => Message.Item = "") class="btn-close"></button>
-        </div>
+    <div @attributes="InputAttributes" class="@($"alert {alertType} alert-dismissible")" role="alert">
+        @message
+        <button type="button" @onclick="@Hide" class="btn-close"></button>
     </div>
 }
 
 @code {
-    [Parameter] public ItemRef<string>? Message { get; set; }
-    [Parameter] public string? Classes { get; set; }
+    private const string AlertSuccess = "alert-success";
+    private const string AlertWarning = "alert-warning";
+    private const string AlertError = "alert-danger";
 
-    protected override void OnInitialized()
-    {
-        if(Message != null)
-            Message.ItemChanged += OnMessageChanged;
-    }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? InputAttributes { get; set; }
 
-    private void OnMessageChanged(object? sender, EventArgs args)
+    private string? message;
+
+    private string? alertType;
+
+    public void ShowSuccess(string message)
     {
+        this.alertType = AlertSuccess;
+        this.message = message;
         StateHasChanged();
     }
 
-    public void Dispose()
+    public void ShowWarning(string message)
     {
-        if(Message != null)
-            Message.ItemChanged -= OnMessageChanged;
+        this.alertType = AlertWarning;
+        this.message = message;
+        StateHasChanged();
+    }
+
+    public void ShowError(string message)
+    {
+        this.alertType = AlertError;
+        this.message = message;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        this.message = null;
+        this.alertType = null;
+        StateHasChanged();
     }
 }
