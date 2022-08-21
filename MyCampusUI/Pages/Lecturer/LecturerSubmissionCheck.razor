@@ -1,0 +1,70 @@
+﻿@page "/lecturer/submission-check/{SubmissionId:guid}"
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationService
+@inject IJSRuntime jsRuntime
+@inject IBundleFilesService bundleService
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Lecturer" RedirectIfInvalid="true">
+
+    <div class="container mb-4">
+        @if (submission != null)
+        {
+            <h2 class="mb-3">בדיקת המשימה - @submission.Assignment.Title</h2>
+            <h4 class="text-muted mb-3">הגיש - @submission.Student.FirstName @submission.Student.LastName</h4>
+
+            <div class="row p-3">
+                <div class="col-12">
+                    <div class="card shadow-sm position-relative">
+                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigateTo($"/lecturer/assignment/{submission.AssignmentId}/submissions"))">
+                            חזור <span class="oi oi-arrow-left"></span>
+                        </button>
+                        <div class="card-body">
+
+                            <div class="text-center">
+                                <h1 class="mb-3">פרטי המשימה</h1>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</RenderPermission>
+
+@code {
+    [Parameter] public Guid SubmissionId { get; set; }
+
+    private ClassAssignmentSubmissionEntity? submission;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    submission = await dbContext.ClassAssignmentSubmissions
+                                                .Include(x => x.Assignment).ThenInclude(x => x.Class)
+                                                .Include(x => x.Student)
+                                                .Where(x => x.Id == SubmissionId && x.Assignment.Class.LecturerId == user.Id).FirstOrDefaultAsync();
+
+                    if(submission == null)
+                    {
+                        navigationService.NavigatePreviousOrDefault(true);
+                    }
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
+                }
+            }
+        }
+    }
+}

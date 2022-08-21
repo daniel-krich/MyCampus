@@ -1,0 +1,104 @@
+﻿@page "/lecturer/assignment/{AssignmentId:guid}/submissions"
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationService
+@inject IAssignmentManagerService assignmentManager
+@inject IJSRuntime jsRuntime
+@inject IBundleFilesService bundleService
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Lecturer" RedirectIfInvalid="true">
+
+    <div class="container mb-4">
+        @if (assignment != null)
+        {
+            <h2 class="mb-4">כל ההגשות של המשימה - @assignment.Title</h2>
+
+            <div class="row p-3">
+                <div class="col-12">
+                    <div class="card shadow-sm position-relative">
+                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigateTo($"/lecturer/class/{assignment.ClassId}/assignments"))">
+                            חזור <span class="oi oi-arrow-left"></span>
+                        </button>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <h1 class="mb-3">כל ההגשות</h1>
+                            </div>
+                            <div class="mt-4 mb-4">
+
+                                @if (assignment.AssignmentSubmissions.Count > 0)
+                                {
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">שם מלא</th>
+                                                <th scope="col">תאריך הגשה</th>
+                                                <th scope="col">ציון</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var submission in assignment.AssignmentSubmissions)
+                                            {
+                                                <tr role="button" @onclick="@(() => navigationService.NavigateTo($"/lecturer/submission-check/{submission.Id}"))">
+                                                    <td>@submission.Student.FirstName @submission.Student.LastName</td>
+                                                    <td>@submission.SubmittedAt.ToLongDateHebrewString()</td>
+                                                    <td>
+                                                        @if (submission.LecturerEvaluation != null)
+                                                        {
+                                                            <span>@submission.LecturerEvaluation</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-danger">לא נבדק</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                                else
+                                {
+                                    <p class="h4 text-center text-muted">לא הוגשו פתרונות עבור משימה זו</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</RenderPermission>
+
+@code {
+    [Parameter] public Guid AssignmentId { get; set; }
+
+    private ClassAssignmentEntity? assignment;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.DisposedUserEntity?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                if(user != null)
+                {
+                    assignment = await dbContext.ClassAssignments.Include(x => x.AssignmentSubmissions)
+                                                                 .ThenInclude(x => x.Student)
+                                                                 .Include(x => x.Class).FirstOrDefaultAsync(x => x.Id == AssignmentId && x.Class.LecturerId == user.Id);
+
+                    if(assignment == null)
+                    {
+                        navigationService.NavigatePreviousOrDefault(true);
+                    }
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
+                }
+            }
+        }
+    }
+}

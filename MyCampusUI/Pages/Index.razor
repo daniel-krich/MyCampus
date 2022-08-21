@@ -95,30 +95,28 @@
                 var user = await dbContext.Users.Include(x => x.LecturingClasses).Include(x => x.Classes).FirstOrDefaultAsync(x => x.Id == authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
+                    var currentTime = DateTime.Now;
                     if (user.Permissions == UserPermissionsEnum.Lecturer)
                     {
                         classes = await (from lecturerClass in user.LecturingClasses
                                          join course in dbContext.Courses on lecturerClass.CourseId equals course.Id
                                          select new ClassModel { Class = lecturerClass, Course = course, Lecturer = lecturerClass.Lecturer }).ToAsyncEnumerable().ToListAsync();
 
-                        var currentTime = DateTime.Now;
-                        meetings = await (from lecturerClass in user.LecturingClasses
-                                          join course in dbContext.Courses on lecturerClass.CourseId equals course.Id
-                                          join meeting in dbContext.ClassMeetings on user.Id equals meeting.LecturerId
-                                          where meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2)
+                        meetings = await (from meeting in dbContext.ClassMeetings.Include(x => x.Class)
+                                          join course in dbContext.Courses on meeting.Class.CourseId equals course.Id
+                                          where (meeting.StartAt > currentTime || EF.Functions.DateDiffHour(meeting.StartAt, currentTime) < 2) && meeting.LecturerId == user.Id
                                           orderby meeting.StartAt ascending
-                                          select new MeetingModel { Meeting = meeting, Class = lecturerClass, Course = course, Lecturer = meeting.Lecturer}).Take(5).ToAsyncEnumerable().ToListAsync();
+                                          select new MeetingModel { Meeting = meeting, Class = meeting.Class, Course = course, Lecturer = meeting.Lecturer}).Take(5).ToAsyncEnumerable().ToListAsync();
                     }
                     else if(user.Permissions == UserPermissionsEnum.Student)
                     {
                         classes = await (from userClass in user.Classes
-                                         join classEntity in dbContext.Classes on userClass.ClassId equals classEntity.Id
+                                         join classEntity in dbContext.Classes.Include(x => x.Lecturer) on userClass.ClassId equals classEntity.Id
                                          join course in dbContext.Courses on classEntity.CourseId equals course.Id
                                          select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer }).ToAsyncEnumerable().ToListAsync();
 
-                        var currentTime = DateTime.Now;
                         meetings = await (from classAndCourse in classes
-                                          join meeting in dbContext.ClassMeetings on classAndCourse.Class?.Id equals meeting.ClassId
+                                          join meeting in dbContext.ClassMeetings.Include(x => x.Lecturer) on classAndCourse.Class?.Id equals meeting.ClassId
                                           where meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2)
                                           orderby meeting.StartAt ascending
                                           select new MeetingModel { Meeting = meeting, Class = classAndCourse.Class, Course = classAndCourse.Course, Lecturer = meeting.Lecturer}).Take(5).ToAsyncEnumerable().ToListAsync();

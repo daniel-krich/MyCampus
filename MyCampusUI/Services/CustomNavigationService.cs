@@ -25,9 +25,9 @@ public class CustomNavigationService : IDisposable, ICustomNavigationService
         CurrentPath = args.Location;
     }
 
-    public void NavigatePrevious()
+    public void NavigatePreviousOrDefault(bool force = default)
     {
-        _navigationManager.NavigateTo(PreviousPath ?? _navigationManager.BaseUri);
+        _navigationManager.NavigateTo(PreviousPath ?? _navigationManager.BaseUri, force);
     }
 
     public void NavigateTo(string path)
@@ -35,7 +35,7 @@ public class CustomNavigationService : IDisposable, ICustomNavigationService
         _navigationManager.NavigateTo(path);
     }
 
-    public void NavigateTo(string path, bool forceLoad = false)
+    public void NavigateTo(string path, bool forceLoad = default)
     {
         _navigationManager.NavigateTo(path, forceLoad);
     }

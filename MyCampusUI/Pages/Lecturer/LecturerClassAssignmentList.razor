@@ -129,8 +129,12 @@
                     }
                     else
                     {
-                        navigationManager.NavigatePrevious();
+                        navigationManager.NavigatePreviousOrDefault(true);
                     }
+                }
+                else
+                {
+                    navigationManager.NavigatePreviousOrDefault(true);
                 }
             }
         }

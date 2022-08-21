@@ -48,7 +48,7 @@
                                 </span>
                             }
                         </h5>
-                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigatePrevious())">
+                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigateTo("/student/assignments"))">
                             חזור <span class="oi oi-arrow-left"></span>
                         </button>
                         <div class="card-body">
@@ -186,8 +186,12 @@
                     }
                     else
                     {
-                        navigationService.NavigatePrevious();
+                        navigationService.NavigatePreviousOrDefault(true);
                     }
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
                 }
             }
         }

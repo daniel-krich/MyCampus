@@ -2,6 +2,7 @@
 @page "/lecturer/meetings/{PageId:int}"
 
 @inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationService
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
 <RenderPermission Permission="UserPermissionsEnum.Lecturer" RedirectIfInvalid="true">
@@ -111,6 +112,10 @@
                                       orderby meeting.StartAt descending
                                       select new MeetingModel { Meeting = meeting, Course = course, Class = classEntity, Lecturer = meeting.Lecturer })
                                       .Skip((PageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToAsyncEnumerable().ToListAsync();
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
                 }
             }
         }

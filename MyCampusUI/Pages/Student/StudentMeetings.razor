@@ -2,6 +2,7 @@
 @page "/student/meetings/{PageId:int}"
 
 @inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationService
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
 <RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
@@ -103,6 +104,10 @@
                     meetingPagination?.SetPagesCount(meetingsPages);
 
                     meetings = await dbContext.GetStudentMeetingsPaginationAsync(user.Id, PageId, meetingsPerPage);
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
                 }
             }
         }

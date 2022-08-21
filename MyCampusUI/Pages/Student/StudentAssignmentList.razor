@@ -2,7 +2,7 @@
 @page "/student/assignments/{PageId:int}"
 
 @inject IAuthenticationStateService authenticationState
-@inject NavigationManager navigationManager
+@inject ICustomNavigationService navigationManager
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
 <RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
@@ -22,7 +22,7 @@
                 <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
                     @foreach (var assignment in assignments)
                     {
-                        <div role="button" class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column" @onclick="@(() => navigationManager.NavigateTo("/student/assignment/" + assignment.Assignment?.Id))">
+                        <div role="button" class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column" @onclick="@(() => navigationManager.NavigateTo($"/student/assignment/{assignment.Assignment?.Id}"))">
                             <div class="card h-100 w-100 shadow-sm position-relative">
                                 @if (assignment.AssignmentSubmission == null)
                                 {
@@ -117,6 +117,10 @@
                     assignmentPagination?.SetPagesCount(assignmentsPages);
 
                     assignments = await dbContext.GetStudentAssignmentsPaginationAsync(user.Id, PageId, assignmentsPerPage);
+                }
+                else
+                {
+                    navigationManager.NavigatePreviousOrDefault(true);
                 }
             }
         }

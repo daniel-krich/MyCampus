@@ -95,6 +95,10 @@
 
                     classes = await dbContext.GetLecturerClassesPaginationAsync(user.Id, PageId, classesPerPage);
                 }
+                else
+                {
+                    navigationManager.NavigatePreviousOrDefault(true);
+                }
             }
         }
     }

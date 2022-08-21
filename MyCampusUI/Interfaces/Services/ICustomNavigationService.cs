@@ -7,8 +7,8 @@
         string? PreviousPath { get; set; }
 
         void Dispose();
-        void NavigatePrevious();
+        void NavigatePreviousOrDefault(bool force = default);
         void NavigateTo(string path);
-        void NavigateTo(string path, bool forceLoad = false);
+        void NavigateTo(string path, bool forceLoad = default);
     }
 }

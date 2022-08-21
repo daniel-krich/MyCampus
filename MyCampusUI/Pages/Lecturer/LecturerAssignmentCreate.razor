@@ -20,7 +20,7 @@
             <div class="row p-3">
                 <div class="col-12">
                     <div class="card shadow-sm position-relative">
-                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigatePrevious())">
+                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigateTo($"/lecturer/class/{ClassId}/assignments"))">
                             חזור <span class="oi oi-arrow-left"></span>
                         </button>
                         <div class="card-body">
@@ -108,8 +108,12 @@
 
                     if(classModel == null)
                     {
-                        navigationService.NavigatePrevious();
+                        navigationService.NavigatePreviousOrDefault(true);
                     }
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
                 }
             }
         }
