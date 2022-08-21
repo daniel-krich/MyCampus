@@ -93,7 +93,7 @@
         {
             if (authenticationState.DisposedUserEntity?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.Include(x => x.LecturingClasses).Include(x => x.Classes).FirstOrDefaultAsync(x => x.Id == authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
                     if (user.Permissions == UserPermissionsEnum.Lecturer)

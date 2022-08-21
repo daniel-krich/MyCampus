@@ -3,6 +3,7 @@
 
 @inject IAuthenticationStateService authenticationState
 @inject ICustomNavigationService navigationManager
+@inject IAssignmentManagerService assignmentManager
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
 <RenderPermission Permission="UserPermissionsEnum.Lecturer" RedirectIfInvalid="true">
@@ -52,6 +53,9 @@
                                   <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
                                     <li><a class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/edit")" type="button">עריכת המשימה</a></li>
                                     <li><a class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/submissions")" type="button">צפייה בהגשות</a></li>
+                                    <li>
+                                        <AsyncLoadingButton class="dropdown-item" ButtonTask="@((c) => OnAssignmentDelete(assignment.Assignment?.Id))">מחיקת המשימה</AsyncLoadingButton>
+                                    </li>
                                   </ul>
                                 </div>
                             </div>
@@ -64,7 +68,15 @@
             }
             else
             {
-                <h4 class="text-muted mt-5">לא נמצאו משימות</h4>
+                <p class="h2 text-center mt-5">לא נמצאו משימות</p>
+                <p class="h4 text-center text-muted mb-5">צרו את המשימה הראשונה של הכיתה</p>
+
+                <div class="row justify-content-center">
+                    <a class="new-assignment-empty h5" href="@($"/lecturer/class/{classModel.Class?.Id}/assignment/create")">
+                        <i class="fa-solid fa-plus ms-1"></i>
+                        <span>משימה חדשה</span>
+                    </a>
+                </div>
             }
         }
     </div>
@@ -119,6 +131,23 @@
                         navigationManager.NavigatePrevious();
                     }
                 }
+            }
+        }
+    }
+
+    private async Task OnAssignmentDelete(Guid? assignmentId)
+    {
+        if(classModel?.Class?.Id is Guid classId && assignmentId.HasValue)
+        {
+            try
+            {
+                await assignmentManager.DeleteLecturerAssignment(classId, assignmentId.Value);
+                assignments?.RemoveAll(x => x.Assignment?.Id == assignmentId);
+                StateHasChanged();
+            }
+            catch(AssignmentDeleteException)
+            {
+                //Console.WriteLine(ex);
             }
         }
     }

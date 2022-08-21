@@ -31,7 +31,6 @@ namespace MyCampusData.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            options.UseLazyLoadingProxies();
             options.UseSqlServer(Configuration.GetConnectionString("CampusDatabase"));
         }
 

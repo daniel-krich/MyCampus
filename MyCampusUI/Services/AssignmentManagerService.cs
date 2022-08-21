@@ -28,10 +28,10 @@ namespace MyCampusUI.Services
                 if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
                 {
                     var user = await dbContext.Users.FindAsync(UserId);
-                    var assignment = await dbContext.ClassAssignments.FindAsync(assignmentId);
+                    var assignment = await dbContext.ClassAssignments.FirstOrDefaultAsync(x => x.Id == assignmentId);
                     if (user is not null && assignment is not null)
                     {
-                        var assignmentSub = await assignment.AssignmentSubmissions.ToAsyncEnumerable().FirstOrDefaultAsync(x => x.StudentId == user.Id);
+                        var assignmentSub = await dbContext.ClassAssignmentSubmissions.FirstOrDefaultAsync(x => x.AssignmentId == assignmentId && x.StudentId == user.Id);
 
                         if (assignmentSub?.LecturerEvaluation == null)
                         {
@@ -201,6 +201,51 @@ namespace MyCampusUI.Services
                 }
             }
             throw new AssignmentCreateUpdateException("שגיאה באת יצירת המשימה, יכול להיות שהכיתה אינה קיימת, נסו שוב עוד כמה רגעים");
+        }
+
+        public async Task DeleteLecturerAssignment(Guid classId, Guid assignmentId)
+        {
+            using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
+            {
+                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                {
+                    var user = await dbContext.Users.FindAsync(UserId);
+                    if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)
+                    {
+                        var assignment = await dbContext.ClassAssignments.Include(x => x.AssignmentSubmissions)
+                                                                         .ThenInclude(x => x.AssignmentSubmissionBundle)
+                                                                         .Include(x => x.AssignmentBundle)
+                                                                         .FirstOrDefaultAsync(x => x.Id == assignmentId && x.ClassId == classId);
+                        if (assignment != null)
+                        {
+
+                            if (assignment.AssignmentBundle != null)
+                            {
+                                await _bundleService.DeleteBundleAsync(assignment.AssignmentBundle.Id);
+                                dbContext.Bundles.Remove(assignment.AssignmentBundle);
+                            }
+
+                            foreach(var assignmentSubmission in assignment.AssignmentSubmissions)
+                            {
+                                if (assignmentSubmission.AssignmentSubmissionBundle != null)
+                                {
+                                    await _bundleService.DeleteBundleAsync(assignmentSubmission.AssignmentSubmissionBundle.Id);
+                                    dbContext.Bundles.Remove(assignmentSubmission.AssignmentSubmissionBundle);
+                                }
+                                dbContext.ClassAssignmentSubmissions.Remove(assignmentSubmission);
+                            }
+
+                            dbContext.ClassAssignments.Remove(assignment);
+
+                            await dbContext.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            throw new AssignmentDeleteException("שגיאה באת מחיקת המשימה, יכול להיות שהמזהה לא נכון או שהמשימה לא מקושרת לכיתה שהוזנה");
+                        }
+                    }
+                }
+            }
         }
     }
 }

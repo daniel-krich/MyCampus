@@ -164,18 +164,24 @@
         {
             if (authenticationState.DisposedUserEntity?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.Include(x => x.Classes).FirstOrDefaultAsync(x => x.Id == authenticationState.DisposedUserEntity.Id);
                 if(user != null)
                 {
-                    assignment = await (from userClass in user.Classes
-                                        from assign in dbContext.ClassAssignments
-                                        where assign.Id == AssignmentId &&
-                                        assign.ClassId == userClass.ClassId
-                                        select assign).ToAsyncEnumerable().FirstOrDefaultAsync();
+                    var fullAssignment = await (from userClass in user.Classes
+                                                join assign in dbContext.ClassAssignments on userClass.ClassId equals assign.ClassId
+                                                join assignSubmitFull in dbContext.ClassAssignmentSubmissions
+                                                            on new { p1 = assign.Id, p2 = user.Id }
+                                                            equals new { p1 = assignSubmitFull.AssignmentId, p2 = assignSubmitFull.StudentId } into assignSubmits
+                                                from assignSubmit in assignSubmits.DefaultIfEmpty()
+                                                where assign.Id == AssignmentId &&
+                                                assign.ClassId == userClass.ClassId
+                                                select new { assign, assignSubmit }).ToAsyncEnumerable().FirstOrDefaultAsync();
+
+                    assignment = fullAssignment?.assign;
 
                     if(assignment != null)
                     {
-                        assignmentSubmission = await assignment.AssignmentSubmissions.ToAsyncEnumerable().FirstOrDefaultAsync(x => x.StudentId == user.Id);
+                        assignmentSubmission = fullAssignment?.assignSubmit;
                         assignmentSubmit.SubmissionText = assignmentSubmission?.SubmissionText ?? "";
                     }
                     else

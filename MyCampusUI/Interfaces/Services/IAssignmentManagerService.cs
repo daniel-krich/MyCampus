@@ -9,5 +9,6 @@ namespace MyCampusUI.Interfaces.Services
         Task<ClassAssignmentSubmissionEntity> SubmitAssignment(Guid assignmentId, AssignmentSubmitModel assignmentSubmit, IReadOnlyList<IBrowserFile>? requestedUploadFiles, CancellationToken cancelToken = default);
         Task<ClassAssignmentEntity> UpdateLecturerAssignment(Guid assignmentId, AssignmentCreationModel assignmentCreation, IReadOnlyList<IBrowserFile>? requestedUploadFiles, CancellationToken cancelToken = default);
         Task<ClassAssignmentEntity> CreateLecturerAssignment(Guid classId, AssignmentCreationModel assignmentCreation, IReadOnlyList<IBrowserFile>? requestedUploadFiles, CancellationToken cancelToken = default);
+        Task DeleteLecturerAssignment(Guid classId, Guid assignmentId);
     }
 }

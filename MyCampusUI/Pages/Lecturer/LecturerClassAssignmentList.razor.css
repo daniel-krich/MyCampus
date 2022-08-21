@@ -9,3 +9,17 @@
     text-decoration: none;
     color: #303030;
 }
+
+.new-assignment-empty {
+    padding: 20px;
+    border-radius: 15px;
+
+    background-color: #fafafa;
+    width: fit-content;
+    box-shadow: 0px 0px 10px #30303060;
+    border: 0;
+
+    outline: none;
+    text-decoration: none;
+    color: #303030;
+}

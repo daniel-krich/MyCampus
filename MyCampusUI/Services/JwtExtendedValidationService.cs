@@ -75,7 +75,7 @@ namespace MyCampusUI.Services
             {
                 using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
                 {
-                    SessionEntity? session = await dbContext.Sessions.FindAsync(new Guid(sessionIdClaim));
+                    SessionEntity? session = await dbContext.Sessions.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == new Guid(sessionIdClaim));
                     if (session != null && session.User != null)
                     {
                         if (session.ExpireAt > DateTime.Now && session.User.Permissions > UserPermissionsEnum.WaitingApproval)

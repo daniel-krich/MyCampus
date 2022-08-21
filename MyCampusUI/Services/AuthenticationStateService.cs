@@ -54,7 +54,7 @@ public class AuthenticationStateService : IAuthenticationStateService
 
                     SessionEntity session = new SessionEntity
                     {
-                        User = user,
+                        UserId = user.Id,
                         ExpireAt = remember ? DateTime.Now.Add(CookiesConst.AccessCookieExpire) : DateTime.Now.Add(CookiesConst.AccessCookieExpireTemp)
                     };
                     dbContext.Sessions.Add(session);
