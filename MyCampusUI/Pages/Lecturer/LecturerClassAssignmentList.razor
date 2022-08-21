@@ -7,7 +7,7 @@
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
 <RenderPermission Permission="UserPermissionsEnum.Lecturer" RedirectIfInvalid="true">
-
+    <ModalNotification @ref="notifModal" />
     <div class="container mb-4">
         @if(classModel != null)
         {
@@ -84,6 +84,7 @@
 </RenderPermission>
 
 @code {
+    private ModalNotification? notifModal;
     private ClassModel? classModel;
     private List<ClassAssignmentModel>? assignments;
 
@@ -143,11 +144,12 @@
             {
                 await assignmentManager.DeleteLecturerAssignment(classId, assignmentId.Value);
                 assignments?.RemoveAll(x => x.Assignment?.Id == assignmentId);
+                notifModal?.ShowConfirm("הצלחה", "המשימה נמחקה בהצלחה מהמערכת");
                 StateHasChanged();
             }
-            catch(AssignmentDeleteException)
+            catch(AssignmentDeleteException ex)
             {
-                //Console.WriteLine(ex);
+                notifModal?.ShowConfirm("שגיאה", ex.Message);
             }
         }
     }
