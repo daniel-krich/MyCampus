@@ -18,7 +18,7 @@ namespace MyCampusData.Entities
         public string SubmissionText { get; set; }
         public DateTime SubmittedAt { get; set; }
 #nullable enable
-        [MaxLength(100)]
+        [MaxLength(20)]
         public string? LecturerEvaluation { get; set; }
         [MaxLength(1024)]
         public string? LecturerNotes { get; set; }

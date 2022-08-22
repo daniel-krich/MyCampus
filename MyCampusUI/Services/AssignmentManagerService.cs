@@ -247,5 +247,31 @@ namespace MyCampusUI.Services
                 }
             }
         }
+
+        public async Task EvaluateAssignmentSubmission(Guid submissionId, AssignmentEvaluationModel assignmentEvaluation)
+        {
+            using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
+            {
+                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                {
+                    var user = await dbContext.Users.FindAsync(UserId);
+                    if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)
+                    {
+                        var submission = await dbContext.ClassAssignmentSubmissions.FindAsync(submissionId);
+                        if (submission != null)
+                        {
+                            submission.LecturerEvaluation = assignmentEvaluation.Evaluation;
+                            submission.LecturerNotes = assignmentEvaluation.Notes;
+                            dbContext.ClassAssignmentSubmissions.Update(submission);
+                            await dbContext.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            throw new AssignmentSubmissionEvaluationException("שגיאה באת בדיקת המשימה, המשימה שהוגשה לא נמצאה");
+                        }
+                    }
+                }
+            }
+        }
     }
 }

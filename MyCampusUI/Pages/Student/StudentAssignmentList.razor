@@ -52,7 +52,7 @@
                                     </span>
 
                                     <h5>
-                                        <span class="position-absolute top-100 start-50 translate-middle badge bg-dark">
+                                        <span class="position-absolute top-100 start-50 translate-middle badge bg-dark text-wrap">
                                             ציון: @assignment.AssignmentSubmission.LecturerEvaluation
                                         </span>
                                     </h5>
@@ -70,7 +70,7 @@
                         </div>
                     }
                 </div>
-                <nav class="d-flex justify-content-center mt-4">
+                <nav class="d-flex justify-content-center mt-5">
                     <Pagination @ref="assignmentPagination" UrlPagination="/student/assignments/" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="assignmentsPages" />
                 </nav>
             }

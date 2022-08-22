@@ -119,12 +119,12 @@
                                                         </button>
                                                     </div>
 
-                                                    @if (assignmentSubmission?.LecturerNotes != null)
+                                                    @if (assignmentSubmission?.LecturerNotes != null && assignmentSubmission.LecturerNotes.Length > 0)
                                                     {
                                                         <div class="alert alert-primary" role="alert">
+                                                            <p class="h6 fw-bold text-center">הערות מרצה</p>
                                                             <small>
-                                                                <span class="fw-bolder">הערות מרצה: </span>
-                                                                <span>@assignmentSubmission.LecturerNotes</span>
+                                                                <p class="space-pre-wrap">@assignmentSubmission.LecturerNotes</p>
                                                             </small>
                                                         </div>
                                                     }
@@ -236,7 +236,7 @@
             }
             catch
             {
-                alert?.ShowWarning("אירעה שגיאה באת הגשת המשימה");
+                alert?.ShowError("אירעה שגיאה באת הגשת המשימה");
             }
             finally
             {

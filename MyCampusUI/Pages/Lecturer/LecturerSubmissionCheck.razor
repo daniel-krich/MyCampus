@@ -2,6 +2,7 @@
 
 @inject IAuthenticationStateService authenticationState
 @inject ICustomNavigationService navigationService
+@inject IAssignmentManagerService assignmentManager
 @inject IJSRuntime jsRuntime
 @inject IBundleFilesService bundleService
 @inject IDbContextFactory<CampusContext> campusContextFactory
@@ -22,10 +23,73 @@
                         </button>
                         <div class="card-body">
 
-                            <div class="text-center">
-                                <h1 class="mb-3">פרטי המשימה</h1>
-                            </div>
+                            <div class="row">
+                                <div class="col-lg-6 border-secondary task-border-divide">
+                                    <div class="card-body">
+                                        <h1 class="mb-0 text-center">פרטי המשימה</h1>
+                                        <div class="space-pre-wrap mt-5">
+                                            @submission.Assignment.AssignmentText
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="card-body">
+                                        <div class="text-center">
+                                            <h1 class="mb-3">פרטי הגשה</h1>
+                                        </div>
+                                        <div class="mt-4 mb-4">
+                                            <div class="form-group">
+                                                <div class="space-pre-wrap mt-5">
+                                                    @submission.SubmissionText
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-1 mb-3">
+                                            <div class="col col-lg-auto mt-2">
+                                                <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-success shadow-sm" ButtonTask="@((e) => DownloadAttachedBundle(submission.Assignment.AssignmentBundleId))" disabled="@(submission.Assignment?.AssignmentBundleId == null)">
+                                                    <span>הורד קבצים שצורפו למשימה</span>
+                                                </AsyncLoadingButton>
+                                            </div>
 
+                                            <div class="col col-lg-auto mt-2">
+                                                <AsyncLoadingButton type="button" class="btn btn-sm btn-outline-primary shadow-sm" ButtonTask="@((e) => DownloadAttachedBundle(submission.AssignmentSubmissionBundleId))" disabled="@(submission.AssignmentSubmissionBundleId == null)">
+                                                    <span>הורד קבצים שהוגשו</span>
+                                                </AsyncLoadingButton>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <EditForm Context="AssignmentSubmitContext" OnValidSubmit="@OnAssignmentEvaluate" Model="this.evaluationModel">
+                                                <DataAnnotationsValidator />
+                                                <div class="form-group">
+                                                    <div class="mb-3">
+                                                        <label class="mb-2" for="evaluationInput">ציון הגשה</label>
+                                                        <input type="text" class="form-control" @bind="evaluationModel.Evaluation" id="evaluationInput" placeholder="טוב מאוד, מצויין, 80 וכו'" maxlength="20" required/>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="mb-2" for="evaluationNotesInput">הערות מרצה</label>
+                                                        <textarea class="form-control" cols="10" rows="5" @bind="evaluationModel.Notes" id="evaluationNotesInput" maxlength="1024"/>
+                                                    </div>
+
+                                                    <div class="form-group text-center mt-3 mb-3">
+                                                        <button type="submit" class="btn btn-dark mb-1">
+                                                            @if (inAction)
+                                                            {
+                                                                <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+                                                            }
+                                                            <span>עדכן הגשה</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </EditForm>
+                                        </div>
+                                        <div class="mt-2">
+                                            <DismissibleAlert @ref="alert" class="m-2 shadow-sm"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -38,8 +102,13 @@
 @code {
     [Parameter] public Guid SubmissionId { get; set; }
 
+    private DismissibleAlert? alert;
+
+    private bool inAction;
+
     private ClassAssignmentSubmissionEntity? submission;
 
+    private AssignmentEvaluationModel evaluationModel = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,8 +123,12 @@
                                                 .Include(x => x.Assignment).ThenInclude(x => x.Class)
                                                 .Include(x => x.Student)
                                                 .Where(x => x.Id == SubmissionId && x.Assignment.Class.LecturerId == user.Id).FirstOrDefaultAsync();
-
-                    if(submission == null)
+                    if(submission != null)
+                    {
+                        evaluationModel.Evaluation = submission.LecturerEvaluation;
+                        evaluationModel.Notes = submission.LecturerNotes;
+                    }
+                    else
                     {
                         navigationService.NavigatePreviousOrDefault(true);
                     }
@@ -64,6 +137,57 @@
                 {
                     navigationService.NavigatePreviousOrDefault(true);
                 }
+            }
+        }
+    }
+
+    private async Task DownloadAttachedBundle(Guid? bundleId)
+    {
+        if (bundleId.HasValue)
+        {
+            using var stream = await bundleService.OpenBundleStreamAsync(bundleId.Value);
+            if (stream != null)
+            {
+                using DotNetStreamReference streamRef = new DotNetStreamReference(stream);
+                string? blobUrl = await jsRuntime.CreateObjectBlobUrl(streamRef, FileTransferEnum.ApplicationZip);
+                if (blobUrl != null)
+                {
+                    await jsRuntime.DownloadBlob($"{submission?.Assignment?.Title ?? "Unnamed assignment"}.zip", blobUrl);
+                    await jsRuntime.ClearBlobUrlObject(blobUrl);
+                }
+            }
+            else
+            {
+                alert?.ShowWarning("אירעה שגיאה, הקבצים לא נמצאו");
+            }
+        }
+    }
+
+    private async Task OnAssignmentEvaluate()
+    {
+        if (!inAction)
+        {
+            try
+            {
+                inAction = true;
+
+                if (submission != null)
+                {
+                    await assignmentManager.EvaluateAssignmentSubmission(submission.Id, evaluationModel);
+                    alert?.ShowSuccess("המשימה עודכנה בהצלחה");
+                }
+            }
+            catch(AssignmentSubmissionEvaluationException ex)
+            {
+                alert?.ShowWarning(ex.Message);
+            }
+            catch
+            {
+                alert?.ShowError("אירעה שגיאה באת עדכון המשימה");
+            }
+            finally
+            {
+                inAction = false;
             }
         }
     }
