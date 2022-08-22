@@ -94,3 +94,29 @@ a, .btn-link {
 .flex-flow-column {
     flex-flow: column nowrap;
 }
+
+
+@media only screen and (max-width: 900px) {
+    .table > tbody > tr > td,
+    .table > tbody > tr > th,
+    .table > tfoot > tr > td,
+    .table > tfoot > tr > th,
+    .table > thead > tr > td,
+    .table > thead > tr > th {
+        display: block;
+        min-width: 100% !important;
+    }
+
+    .table > thead > tr > th {
+        display: none;
+    }
+
+    .table > tbody > tr:nth-child(odd) > td:last-child {
+        border-bottom: 3px solid #505050;
+        padding-bottom: 20px;
+    }
+
+    .table > tbody > tr:nth-child(even) > td:first-child {
+        padding-top: 20px;
+    }
+}
