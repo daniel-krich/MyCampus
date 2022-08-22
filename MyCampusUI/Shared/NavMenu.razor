@@ -12,7 +12,7 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <nav class="flex-column">
-        @if(authenticationState?.DisposedUserEntity?.Permissions == UserPermissionsEnum.Student)
+        @if(authenticationState?.User?.Permissions == UserPermissionsEnum.Student)
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -40,7 +40,7 @@
                 </NavLink>
             </div>
         }
-        else if(authenticationState?.DisposedUserEntity?.Permissions == UserPermissionsEnum.Lecturer)
+        else if(authenticationState?.User?.Permissions == UserPermissionsEnum.Lecturer)
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -66,7 +66,7 @@
                 </NavLink>
             </div>
         }
-        else if(authenticationState?.DisposedUserEntity?.Permissions == UserPermissionsEnum.Staff)
+        else if(authenticationState?.User?.Permissions == UserPermissionsEnum.Staff)
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">

@@ -8,12 +8,7 @@ namespace MyCampusUI.Interfaces.Services
     {
         bool IsAuthenticated { get; }
         Guid? SessionId { get; }
-
-        /// <summary>
-        /// Use with caution, the db context is already disposed.
-        /// Using lazy loading will throw an exception.
-        /// </summary>
-        public UserEntity? DisposedUserEntity { get; set; }
+        public UserEntity? User { get; set; }
         Task<CookieModel> CreateJwtSessionToken(string username, string password, bool remember);
     }
 }

@@ -92,9 +92,9 @@
 
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
                 if(user != null)
                 {
                     meetingsCount = await (from meeting in dbContext.ClassMeetings
@@ -111,7 +111,7 @@
                                       where meeting.LecturerId == user.Id
                                       orderby meeting.StartAt descending
                                       select new MeetingModel { Meeting = meeting, Course = course, Class = classEntity, Lecturer = meeting.Lecturer })
-                                      .Skip((PageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToAsyncEnumerable().ToListAsync();
+                                      .Skip((PageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToListAsync();
                 }
                 else
                 {

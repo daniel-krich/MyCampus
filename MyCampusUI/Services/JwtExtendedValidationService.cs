@@ -71,30 +71,34 @@ namespace MyCampusUI.Services
         public override async Task TokenValidated(TokenValidatedContext context)
         {
             var sessionIdClaim = context.Principal.FindFirstValue(ClaimTypes.Sid);
+            
             if (sessionIdClaim != null)
             {
-                using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
+                if (context.HttpContext.Request.Path.Equals("/_blazor"))
                 {
-                    SessionEntity? session = await dbContext.Sessions.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == new Guid(sessionIdClaim));
-                    if (session != null && session.User != null)
+                    using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
                     {
-                        if (session.ExpireAt > DateTime.Now && session.User.Permissions > UserPermissionsEnum.WaitingApproval)
+                        SessionEntity? session = await dbContext.Sessions.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == new Guid(sessionIdClaim));
+                        if (session != null && session.User != null)
                         {
-                            context.HttpContext.Items["SessionId"] = session.Id;
-                            context.HttpContext.Items["DisposedUserEntity"] = session.User;
-                            context.Success();
-                            return;
+                            if (session.ExpireAt > DateTime.Now && session.User.Permissions > UserPermissionsEnum.WaitingApproval)
+                            {
+                                context.HttpContext.Items["SessionId"] = session.Id;
+                                context.HttpContext.Items["UserEntity"] = session.User;
+                                context.Success();
+                                return;
+                            }
+                            else
+                            {
+                                dbContext.Remove(session);
+                                await dbContext.SaveChangesAsync();
+                            }
                         }
-                        else
-                        {
-                            dbContext.Remove(session);
-                            await dbContext.SaveChangesAsync();
-                        }
+                        ResetSessionCookies(context);
+                        context.Fail("Session expired");
                     }
                 }
             }
-            ResetSessionCookies(context);
-            context.Fail("Session expired");
         }
 
         private void ResetSessionCookies(ResultContext<JwtBearerOptions> context)

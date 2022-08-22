@@ -162,26 +162,23 @@
     {
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.Include(x => x.Classes).FirstOrDefaultAsync(x => x.Id == authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == authenticationState.User.Id);
                 if(user != null)
                 {
-                    var fullAssignment = await (from userClass in user.Classes
+                    var fullAssignment = await (from userClass in dbContext.UserClasses
                                                 join assign in dbContext.ClassAssignments on userClass.ClassId equals assign.ClassId
-                                                join assignSubmitFull in dbContext.ClassAssignmentSubmissions
-                                                            on new { p1 = assign.Id, p2 = user.Id }
-                                                            equals new { p1 = assignSubmitFull.AssignmentId, p2 = assignSubmitFull.StudentId } into assignSubmits
-                                                from assignSubmit in assignSubmits.DefaultIfEmpty()
-                                                where assign.Id == AssignmentId &&
-                                                assign.ClassId == userClass.ClassId
-                                                select new { assign, assignSubmit }).ToAsyncEnumerable().FirstOrDefaultAsync();
+                                                join assignSubmit in dbContext.ClassAssignmentSubmissions on assign.Id equals assignSubmit.AssignmentId into assignSubmits
+                                                from assignSub in assignSubmits.DefaultIfEmpty()
+                                                where userClass.StudentId == user.Id && assign.Id == AssignmentId
+                                                select new { assign, assignSub }).FirstOrDefaultAsync();
 
                     assignment = fullAssignment?.assign;
 
                     if(assignment != null)
                     {
-                        assignmentSubmission = fullAssignment?.assignSubmit;
+                        assignmentSubmission = fullAssignment?.assignSub;
                         assignmentSubmit.SubmissionText = assignmentSubmission?.SubmissionText ?? "";
                     }
                     else

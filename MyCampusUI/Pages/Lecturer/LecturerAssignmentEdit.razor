@@ -89,16 +89,16 @@
     {
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
                 if(user != null)
                 {
                     assignment = await (from classEntity in dbContext.Classes
                                         join assignment in dbContext.ClassAssignments on classEntity.Id equals assignment.ClassId
                                         where assignment.Id == AssignmentId &&
                                         classEntity.LecturerId == user.Id
-                                        select assignment).ToAsyncEnumerable().FirstOrDefaultAsync();
+                                        select assignment).FirstOrDefaultAsync();
 
                     if(assignment != null)
                     {

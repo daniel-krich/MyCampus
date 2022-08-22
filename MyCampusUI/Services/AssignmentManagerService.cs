@@ -25,10 +25,10 @@ namespace MyCampusUI.Services
         {
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
-                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                if (_authenticationState.User?.Id is Guid UserId)
                 {
                     var user = await dbContext.Users.FindAsync(UserId);
-                    var assignment = await dbContext.ClassAssignments.FirstOrDefaultAsync(x => x.Id == assignmentId);
+                    var assignment = await dbContext.ClassAssignments.FindAsync(assignmentId);
                     if (user is not null && assignment is not null)
                     {
                         var assignmentSub = await dbContext.ClassAssignmentSubmissions.FirstOrDefaultAsync(x => x.AssignmentId == assignmentId && x.StudentId == user.Id);
@@ -110,7 +110,7 @@ namespace MyCampusUI.Services
         {
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
-                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                if (_authenticationState.User?.Id is Guid UserId)
                 {
                     var user = await dbContext.Users.FindAsync(UserId);
                     if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)
@@ -161,7 +161,7 @@ namespace MyCampusUI.Services
         {
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
-                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                if (_authenticationState.User?.Id is Guid UserId)
                 {
                     var user = await dbContext.Users.FindAsync(UserId);
                     if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)
@@ -207,7 +207,7 @@ namespace MyCampusUI.Services
         {
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
-                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                if (_authenticationState.User?.Id is Guid UserId)
                 {
                     var user = await dbContext.Users.FindAsync(UserId);
                     if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)
@@ -252,7 +252,7 @@ namespace MyCampusUI.Services
         {
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
-                if (_authenticationState.DisposedUserEntity?.Id is Guid UserId)
+                if (_authenticationState.User?.Id is Guid UserId)
                 {
                     var user = await dbContext.Users.FindAsync(UserId);
                     if (user is not null && user.Permissions == UserPermissionsEnum.Lecturer)

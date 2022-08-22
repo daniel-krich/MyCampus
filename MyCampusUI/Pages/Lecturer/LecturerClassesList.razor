@@ -82,9 +82,9 @@
 
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
                 if(user != null)
                 {
                     classesCount = await dbContext.GetLecturerClassesCountAsync(user.Id);

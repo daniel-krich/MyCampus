@@ -18,7 +18,7 @@ namespace MyCampusData.Extensions
                           join classEntity in ctx.Classes on userClass.ClassId equals classEntity.Id
                           join assignment in ctx.ClassAssignments on classEntity.Id equals assignment.ClassId
                           where userClass.StudentId == studentId
-                          select assignment.Id).ToAsyncEnumerable().LongCountAsync();
+                          select assignment.Id).LongCountAsync();
         }
 
         public static async Task<List<StudentAssignmentModel>> GetStudentAssignmentsPaginationAsync(this CampusContext ctx, Guid studentId, int pageId, int assignmentsPerPage)
@@ -34,7 +34,7 @@ namespace MyCampusData.Extensions
                           where userClass.StudentId == studentId
                           orderby assignment.CreatedAt descending
                           select new StudentAssignmentModel { Class = classEntity, Assignment = assignment, Course = course, AssignmentSubmission = assignmentSubDefault })
-                                                .Skip((pageId - 1) * assignmentsPerPage).Take(assignmentsPerPage).ToAsyncEnumerable().ToListAsync();
+                                                .Skip((pageId - 1) * assignmentsPerPage).Take(assignmentsPerPage).ToListAsync();
         }
 
         public static async Task<long> GetClassAssignmentsCountAsync(this CampusContext ctx, Guid classId)
@@ -42,7 +42,7 @@ namespace MyCampusData.Extensions
             return await (from classEntity in ctx.Classes
                           join assignment in ctx.ClassAssignments on classEntity.Id equals assignment.ClassId
                           where assignment.ClassId == classId
-                          select assignment.Id).ToAsyncEnumerable().LongCountAsync();
+                          select assignment.Id).LongCountAsync();
         }
 
         public static async Task<List<ClassAssignmentModel>> GetClassAssignmentsPaginationAsync(this CampusContext ctx, Guid classId, int pageId, int assignmentsPerPage)
@@ -51,7 +51,7 @@ namespace MyCampusData.Extensions
                           join assignment in ctx.ClassAssignments on classEntity.Id equals assignment.ClassId
                           where assignment.ClassId == classId
                           orderby assignment.CreatedAt descending
-                          select new ClassAssignmentModel { Assignment = assignment, AssignmentSubmissions = assignment.AssignmentSubmissions.LongCount() }).Skip((pageId - 1) * assignmentsPerPage).Take(assignmentsPerPage).ToAsyncEnumerable().ToListAsync();
+                          select new ClassAssignmentModel { Assignment = assignment, AssignmentSubmissions = assignment.AssignmentSubmissions.LongCount() }).Skip((pageId - 1) * assignmentsPerPage).Take(assignmentsPerPage).ToListAsync();
         }
 
         public static async Task<long> GetStudentMeetingCountAsync(this CampusContext ctx, Guid studentId)
@@ -60,7 +60,7 @@ namespace MyCampusData.Extensions
                           join classEntity in ctx.Classes on userClass.ClassId equals classEntity.Id
                           join meeting in ctx.ClassMeetings on classEntity.Id equals meeting.ClassId
                           where userClass.StudentId == studentId
-                          select meeting.Id).ToAsyncEnumerable().LongCountAsync();
+                          select meeting.Id).LongCountAsync();
         }
 
         public static async Task<List<MeetingModel>> GetStudentMeetingsPaginationAsync(this CampusContext ctx, Guid studentId, int pageId, int meetingsPerPage)
@@ -71,15 +71,15 @@ namespace MyCampusData.Extensions
                           join course in ctx.Courses on classEntity.CourseId equals course.Id
                           where userClass.StudentId == studentId
                           orderby meeting.StartAt descending
-                          select new MeetingModel { Class = classEntity, Course = course, Meeting = meeting, Lecturer = meeting.Lecturer})
-                          .Skip((pageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToAsyncEnumerable().ToListAsync();
+                          select new MeetingModel { Class = classEntity, Course = course, Meeting = meeting, Lecturer = meeting.Lecturer })
+                          .Skip((pageId - 1) * meetingsPerPage).Take(meetingsPerPage).ToListAsync();
         }
 
         public static async Task<long> GetLecturerClassesCountAsync(this CampusContext ctx, Guid lecturerId)
         {
             return await (from classEntity in ctx.Classes
                           where classEntity.LecturerId == lecturerId
-                          select classEntity.Id).ToAsyncEnumerable().LongCountAsync();
+                          select classEntity.Id).LongCountAsync();
         }
 
         public static async Task<List<ClassModel>> GetLecturerClassesPaginationAsync(this CampusContext ctx, Guid lecturerId, int pageId, int classesPerPage)
@@ -88,7 +88,7 @@ namespace MyCampusData.Extensions
                           join course in ctx.Courses on classEntity.CourseId equals course.Id
                           where classEntity.LecturerId == lecturerId
                           select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer })
-                          .Skip((pageId - 1) * classesPerPage).Take(classesPerPage).ToAsyncEnumerable().ToListAsync();
+                          .Skip((pageId - 1) * classesPerPage).Take(classesPerPage).ToListAsync();
         }
 
         public static async Task<ClassModel?> GetLecturerClassAsync(this CampusContext ctx, Guid lecturerId, Guid classId)
@@ -96,7 +96,7 @@ namespace MyCampusData.Extensions
             return await (from classEntity in ctx.Classes
                           join course in ctx.Courses on classEntity.CourseId equals course.Id
                           where classEntity.LecturerId == lecturerId && classEntity.Id == classId
-                          select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer }).ToAsyncEnumerable().FirstOrDefaultAsync();
+                          select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer }).FirstOrDefaultAsync();
         }
     }
 }

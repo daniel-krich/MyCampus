@@ -114,15 +114,15 @@
     {
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
                 if(user != null)
                 {
                     submission = await dbContext.ClassAssignmentSubmissions
                                                 .Include(x => x.Assignment).ThenInclude(x => x.Class)
                                                 .Include(x => x.Student)
-                                                .Where(x => x.Id == SubmissionId && x.Assignment.Class.LecturerId == user.Id).FirstOrDefaultAsync();
+                                                .FirstOrDefaultAsync(x => x.Id == SubmissionId && x.Assignment.Class.LecturerId == user.Id);
                     if(submission != null)
                     {
                         evaluationModel.Evaluation = submission.LecturerEvaluation;

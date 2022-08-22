@@ -21,7 +21,7 @@ namespace MyCampusUI.Components
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if ((Permissions != null && Permissions.Any(x => x == AuthenticationState.DisposedUserEntity?.Permissions)) || (Permission != null && Permission == AuthenticationState.DisposedUserEntity?.Permissions))
+            if ((Permissions != null && Permissions.Any(x => x == AuthenticationState.User?.Permissions)) || (Permission != null && Permission == AuthenticationState.User?.Permissions))
             {
                 base.BuildRenderTree(builder);
 

@@ -22,12 +22,12 @@ public class AuthenticationStateService : IAuthenticationStateService
     public bool IsAuthenticated { get => _httpcontext.HttpContext?.User.Identity?.IsAuthenticated ?? false; }
     public Guid? SessionId { get => _httpcontext.HttpContext?.Items["SessionId"] as Guid?; }
 
-    public UserEntity? DisposedUserEntity {
-        get => _httpcontext.HttpContext?.Items["DisposedUserEntity"] as UserEntity;
+    public UserEntity? User {
+        get => _httpcontext.HttpContext?.Items["UserEntity"] as UserEntity;
         set
         {
             if (_httpcontext.HttpContext != null)
-                _httpcontext.HttpContext.Items["DisposedUserEntity"] = value;
+                _httpcontext.HttpContext.Items["UserEntity"] = value;
         }
     }
 
@@ -42,7 +42,9 @@ public class AuthenticationStateService : IAuthenticationStateService
     {
         using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
         {
-            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
+            var user = await (from entry in dbContext.Users
+                              where entry.Username == username
+                              select new { entry.Id, entry.PasswordHash, entry.PasswordSalt, entry.Permissions }).FirstOrDefaultAsync();
             if (user != null)
             {
                 var salt = user.PasswordSalt;

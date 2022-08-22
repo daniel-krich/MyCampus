@@ -5,7 +5,7 @@
 
 
 <h1 class="text-center mb-5">
-    @DayStateGreet, @authenticationState.DisposedUserEntity?.FirstName @authenticationState.DisposedUserEntity?.LastName
+    @DayStateGreet, @authenticationState.User?.FirstName @authenticationState.User?.LastName
 </h1>
 
 
@@ -90,36 +90,36 @@
     {
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.Include(x => x.LecturingClasses).Include(x => x.Classes).FirstOrDefaultAsync(x => x.Id == authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == authenticationState.User.Id);
                 if(user != null)
                 {
                     var currentTime = DateTime.Now;
                     if (user.Permissions == UserPermissionsEnum.Lecturer)
                     {
-                        classes = await (from lecturerClass in user.LecturingClasses
-                                         join course in dbContext.Courses on lecturerClass.CourseId equals course.Id
-                                         select new ClassModel { Class = lecturerClass, Course = course, Lecturer = lecturerClass.Lecturer }).ToAsyncEnumerable().ToListAsync();
+                        classes = await (from classEntity in dbContext.Classes.Include(x => x.Course)
+                                         where classEntity.LecturerId == user.Id
+                                         select new ClassModel { Class = classEntity, Course = classEntity.Course, Lecturer = classEntity.Lecturer }).ToListAsync();
 
-                        meetings = await (from meeting in dbContext.ClassMeetings.Include(x => x.Class)
-                                          join course in dbContext.Courses on meeting.Class.CourseId equals course.Id
+                        meetings = await (from meeting in dbContext.ClassMeetings.Include(x => x.Class).ThenInclude(x => x.Course)
                                           where (meeting.StartAt > currentTime || EF.Functions.DateDiffHour(meeting.StartAt, currentTime) < 2) && meeting.LecturerId == user.Id
                                           orderby meeting.StartAt ascending
-                                          select new MeetingModel { Meeting = meeting, Class = meeting.Class, Course = course, Lecturer = meeting.Lecturer}).Take(5).ToAsyncEnumerable().ToListAsync();
+                                          select new MeetingModel { Meeting = meeting, Class = meeting.Class, Course = meeting.Class.Course, Lecturer = meeting.Lecturer}).Take(5).ToListAsync();
                     }
                     else if(user.Permissions == UserPermissionsEnum.Student)
                     {
-                        classes = await (from userClass in user.Classes
-                                         join classEntity in dbContext.Classes.Include(x => x.Lecturer) on userClass.ClassId equals classEntity.Id
-                                         join course in dbContext.Courses on classEntity.CourseId equals course.Id
-                                         select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer }).ToAsyncEnumerable().ToListAsync();
+                        classes = await (from userClass in dbContext.UserClasses.Include(x => x.Class).ThenInclude(x => x.Course)
+                                                                                .Include(x => x.Class).ThenInclude(x => x.Lecturer)
+                                         where userClass.StudentId == user.Id
+                                         select new ClassModel { Class = userClass.Class, Course = userClass.Class.Course, Lecturer = userClass.Class.Lecturer }).ToListAsync();
 
-                        meetings = await (from classAndCourse in classes
-                                          join meeting in dbContext.ClassMeetings.Include(x => x.Lecturer) on classAndCourse.Class?.Id equals meeting.ClassId
-                                          where meeting.StartAt > currentTime || currentTime.Subtract(meeting.StartAt) < TimeSpan.FromHours(2)
+                        meetings = await (from meeting in dbContext.ClassMeetings.Include(x => x.Class).ThenInclude(x => x.Course)
+                                                                                 .Include(x => x.Lecturer)
+                                          join userClass in dbContext.UserClasses on meeting.ClassId equals userClass.ClassId
+                                          where (meeting.StartAt > currentTime || EF.Functions.DateDiffHour(meeting.StartAt, currentTime) < 2) && userClass.StudentId == user.Id
                                           orderby meeting.StartAt ascending
-                                          select new MeetingModel { Meeting = meeting, Class = classAndCourse.Class, Course = classAndCourse.Course, Lecturer = meeting.Lecturer}).Take(5).ToAsyncEnumerable().ToListAsync();
+                                          select new MeetingModel { Meeting = meeting, Class = meeting.Class, Course = meeting.Class.Course, Lecturer = meeting.Lecturer}).Take(5).ToListAsync();
                     }
                 }
             }

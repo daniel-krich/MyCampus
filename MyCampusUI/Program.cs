@@ -7,6 +7,7 @@ using MyCampusData.Data;
 using MyCampusUI.Services;
 using MyCampusUI.Interfaces.Services;
 using MyCampusUI.Middleware;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,10 +44,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
+app.UseMiddleware<AppendHostMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseMiddleware<AppendHostMiddleware>();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

@@ -74,9 +74,9 @@
     {
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
                 if(user != null)
                 {
                     updateProfile.FirstName = user.FirstName;
@@ -95,9 +95,9 @@
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
             inAction = true;
-            if (authenticationState.DisposedUserEntity?.Id != null)
+            if (authenticationState.User?.Id != null)
             {
-                var user = await dbContext.Users.FindAsync(authenticationState.DisposedUserEntity.Id);
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
                 if(user != null)
                 {
                     try
@@ -112,9 +112,9 @@
                                 byte[] newHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(updateProfile.NewPassword));
                                 user.PasswordHash = newHash;
 
-                                if(authenticationState.DisposedUserEntity != null && authenticationState.SessionId != null)
+                                if(authenticationState.User != null && authenticationState.SessionId != null)
                                 {
-                                    await dbContext.Sessions.Where(x => x.UserId == authenticationState.DisposedUserEntity.Id && x.Id != authenticationState.SessionId)
+                                    await dbContext.Sessions.Where(x => x.UserId == authenticationState.User.Id && x.Id != authenticationState.SessionId)
                                                       .ToAsyncEnumerable()
                                                       .ForEachAsync(x => dbContext.Sessions.Remove(x));
                                 }
@@ -132,11 +132,13 @@
                         user.PhoneNumber = updateProfile.PhoneNumber;
                         user.City = updateProfile.City;
                         user.Gender = updateProfile.Gender ?? GenderEnum.Other;
+
                         dbContext.Users.Update(user);
                         await dbContext.SaveChangesAsync();
+
                         alert?.ShowSuccess("שינוי הפרטים עבר בהצלחה");
 
-                        authenticationState.DisposedUserEntity = user; // update account state
+                        authenticationState.User = user; // update account state
                     }
                     catch
                     {
