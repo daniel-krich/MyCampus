@@ -51,7 +51,7 @@ namespace MyCampusData.Extensions
                           join assignment in ctx.ClassAssignments on classEntity.Id equals assignment.ClassId
                           where assignment.ClassId == classId
                           orderby assignment.CreatedAt descending
-                          select new ClassAssignmentModel { Assignment = assignment, AssignmentSubmissions = assignment.AssignmentSubmissions.LongCount() }).Skip((pageId - 1) * assignmentsPerPage).Take(assignmentsPerPage).ToListAsync();
+                          select new ClassAssignmentModel { Assignment = assignment, AssignmentSubmissionsCount = assignment.AssignmentSubmissions.LongCount() }).Skip((pageId - 1) * assignmentsPerPage).Take(assignmentsPerPage).ToListAsync();
         }
 
         public static async Task<long> GetStudentMeetingCountAsync(this CampusContext ctx, Guid studentId)
@@ -97,6 +97,23 @@ namespace MyCampusData.Extensions
                           join course in ctx.Courses on classEntity.CourseId equals course.Id
                           where classEntity.LecturerId == lecturerId && classEntity.Id == classId
                           select new ClassModel { Class = classEntity, Course = course, Lecturer = classEntity.Lecturer }).FirstOrDefaultAsync();
+        }
+
+        public static async Task<long> GetClassQuizzesCountAsync(this CampusContext ctx, Guid classId)
+        {
+            return await (from classEntity in ctx.Classes
+                          join quiz in ctx.ClassQuizzes on classEntity.Id equals quiz.ClassId
+                          where classEntity.Id == classId
+                          select quiz.Id).LongCountAsync();
+        }
+
+        public static async Task<List<ClassQuizModel>> GetClassQuizzesPaginationAsync(this CampusContext ctx, Guid classId, int pageId, int examsPerPage)
+        {
+            return await (from classEntity in ctx.Classes
+                          join quiz in ctx.ClassQuizzes on classEntity.Id equals quiz.ClassId
+                          where classEntity.Id == classId
+                          orderby quiz.CreatedAt descending
+                          select new ClassQuizModel { Quiz = quiz, QuizSubmissionsCount = quiz.Submissions.LongCount() }).Skip((pageId - 1) * examsPerPage).Take(examsPerPage).ToListAsync();
         }
     }
 }

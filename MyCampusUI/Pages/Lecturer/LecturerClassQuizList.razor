@@ -1,5 +1,5 @@
-﻿@page "/lecturer/class/{ClassId:guid}/assignments"
-@page "/lecturer/class/{ClassId:guid}/assignments/{PageId:int}"
+﻿@page "/lecturer/class/{ClassId:guid}/quizzes"
+@page "/lecturer/class/{ClassId:guid}/quizzes/{PageId:int}"
 
 @inject IAuthenticationStateService authenticationState
 @inject ICustomNavigationService navigationManager
@@ -11,15 +11,15 @@
     <div class="container mb-4">
         @if(classModel != null)
         {
-            <h2>כל המשימות של @classModel.Class?.Name</h2>
+            <h2>כל החידונים של @classModel.Class?.Name</h2>
             <h4 class="text-muted mb-3">@classModel.Course?.Name</h4>
-            @if (assignments?.Count > 0)
+            @if (quizzes?.Count > 0)
             {
             
-                var numFrom = PageId <= 1 ? 1 : (PageId - 1) * assignmentsPerPage;
-                var numTo = (PageId * assignmentsPerPage) > assignmentsCount ? assignmentsCount : (PageId * assignmentsPerPage);
+                var numFrom = PageId <= 1 ? 1 : (PageId - 1) * quizzesPerPage;
+                var numTo = (PageId * quizzesPerPage) > quizzesCount ? quizzesCount : (PageId * quizzesPerPage);
             
-                <p>מציג @numFrom ועד @numTo מתוך @assignmentsCount תוצאות</p>
+                <p>מציג @numFrom ועד @numTo מתוך @quizzesCount תוצאות</p>
                 <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
 
                     @if (PageId == 1)
@@ -27,34 +27,33 @@
                         <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
                             <div class="card card-new-assignment h-100 w-100 position-relative">
                                 <div class="card-body">
-                                    <a class="d-flex justify-content-center align-items-center h-100 h3" href="@($"/lecturer/class/{classModel.Class?.Id}/assignment/create")">
+                                    <a class="d-flex justify-content-center align-items-center h-100 h3" href="@($"/lecturer/class/{classModel.Class?.Id}/quiz/create")">
                                         <i class="fa-solid fa-plus ms-1"></i>
-                                        <span>משימה חדשה</span>
+                                        <span>חידון חדש</span>
                                     </a>
                                 </div>
                             </div>
                         </div>
                     }
 
-                    @foreach (var assignment in assignments)
+                    @foreach (var quiz in quizzes)
                     {
                         <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
                             <div class="card h-100 w-100 shadow-sm position-relative">
                                 <div class="card-body mt-3">
-                                    <p class="card-title h4 mb-4">@assignment.Assignment?.Title</p>
+                                    <p class="card-title h4 mb-4">@quiz.Quiz?.Title</p>
                                     <div class="card-text">
-                                        <p class="mb-3">סך הכל הוגשו <strong>@assignment.AssignmentSubmissionsCount</strong> פתרונות</p>
-                                        <p class="mb-2"><small>תאריך פתיחה: @(assignment.Assignment!.CreatedAt.ToLongDateHebrewString())</small></p>
-                                        <p class="mb-2"><small>תאריך אחרון: @(assignment.Assignment!.EndSubmissionAt.ToLongDateHebrewString())</small></p>
+                                        <p class="mb-3">סך הכל הוגשו <strong>@quiz.QuizSubmissionsCount</strong> פתרונות</p>
+                                        <p class="mb-2"><small>תאריך יצירה: @(quiz.Quiz!.CreatedAt.ToLongDateHebrewString())</small></p>
+                                        <p class="mb-2"><small>פתוח: @(quiz.Quiz.IsOpen ? "כן" : "לא")</small></p>
                                     </div>
                                 </div>
                                 <div class="dropdown dropend position-absolute top-0 start-0">
                                   <button class="btn btn-sm btn-light" type="button" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
                                   <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
-                                    <li><a class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/edit")" type="button">עריכת המשימה</a></li>
-                                    <li><a class="dropdown-item" href="@($"/lecturer/assignment/{assignment.Assignment?.Id}/submissions")" type="button">צפייה בהגשות</a></li>
+                                    <li><a class="dropdown-item" href="@($"/lecturer/exam/{quiz.Quiz?.ClassId}/submissions")" type="button">צפייה בהגשות</a></li>
                                     <li>
-                                        <AsyncLoadingButton class="dropdown-item" ButtonTask="@((c) => OnAssignmentDelete(assignment.Assignment?.Id))">מחיקת המשימה</AsyncLoadingButton>
+                                        <AsyncLoadingButton class="dropdown-item" ButtonTask="@((c) => OnQuizDelete(quiz.Quiz?.Id))">מחיקת המבחן</AsyncLoadingButton>
                                     </li>
                                   </ul>
                                 </div>
@@ -63,18 +62,18 @@
                     }
                 </div>
                 <nav class="d-flex justify-content-center mt-5">
-                    <Pagination @ref="classAssignmentPagination" UrlPagination="@($"/lecturer/class/{ClassId}/assignments/")" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="assignmentsPages" />
+                    <Pagination @ref="classQuizzesPagination" UrlPagination="@($"/lecturer/class/{ClassId}/assignments/")" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="quizzesPages" />
                 </nav>
             }
             else
             {
-                <p class="h2 text-center mt-5">לא נמצאו משימות</p>
-                <p class="h4 text-center text-muted mb-5">צרו את המשימה הראשונה של הכיתה</p>
+                <p class="h2 text-center mt-5">לא נמצאו חידונים</p>
+                <p class="h4 text-center text-muted mb-5">צרו את החידון הראשון של הכיתה</p>
 
                 <div class="row justify-content-center">
-                    <a class="new-assignment-empty h5" href="@($"/lecturer/class/{classModel.Class?.Id}/assignment/create")">
+                    <a class="new-assignment-empty h5" href="@($"/lecturer/class/{classModel.Class?.Id}/quiz/create")">
                         <i class="fa-solid fa-plus ms-1"></i>
-                        <span>משימה חדשה</span>
+                        <span>חידון חדש</span>
                     </a>
                 </div>
             }
@@ -86,15 +85,15 @@
 @code {
     private ModalNotification? notifModal;
     private ClassModel? classModel;
-    private List<ClassAssignmentModel>? assignments;
+    private List<ClassQuizModel>? quizzes;
 
-    private Pagination? classAssignmentPagination;
+    private Pagination? classQuizzesPagination;
 
-    private int assignmentsPerPage = 8;
+    private int quizzesPerPage = 8;
     private int pagesBufferRange = 5;
 
-    private long assignmentsPages;
-    private long assignmentsCount;
+    private long quizzesPages;
+    private long quizzesCount;
 
     [Parameter] public Guid ClassId { get; set; }
     [Parameter] public int PageId { get; set; }
@@ -103,7 +102,7 @@
     {
         PageId = PageId <= 0 ? 1 : PageId;
 
-        classAssignmentPagination?.SetCurrentPage(PageId);
+        classQuizzesPagination?.SetCurrentPage(PageId);
 
         using(var dbContext = await campusContextFactory.CreateDbContextAsync())
         {
@@ -117,13 +116,13 @@
                                         select new ClassModel { Class = classEntity, Course = classEntity.Course, Lecturer = classEntity.Lecturer }).FirstOrDefaultAsync();
                     if(classModel != null)
                     {
-                        assignmentsCount = await dbContext.GetClassAssignmentsCountAsync(ClassId);
+                        quizzesCount = await dbContext.GetClassQuizzesCountAsync(ClassId);
 
-                        assignmentsPages = Convert.ToInt64(Math.Ceiling((double)assignmentsCount / assignmentsPerPage));
+                        quizzesPages = Convert.ToInt64(Math.Ceiling((double)quizzesCount / quizzesPerPage));
 
-                        classAssignmentPagination?.SetPagesCount(assignmentsPages);
+                        classQuizzesPagination?.SetPagesCount(quizzesPages);
 
-                        assignments = await dbContext.GetClassAssignmentsPaginationAsync(ClassId, PageId, assignmentsPerPage);
+                        quizzes = await dbContext.GetClassQuizzesPaginationAsync(ClassId, PageId, quizzesPerPage);
                     }
                     else
                     {
@@ -138,21 +137,22 @@
         }
     }
 
-    private async Task OnAssignmentDelete(Guid? assignmentId)
+    private Task OnQuizDelete(Guid? quizId)
     {
-        if(classModel?.Class?.Id is Guid classId && assignmentId.HasValue)
+        if(classModel?.Class?.Id is Guid classId && quizId.HasValue)
         {
             try
             {
-                await assignmentManager.DeleteLecturerAssignment(classId, assignmentId.Value);
+                /*await assignmentManager.DeleteLecturerAssignment(classId, assignmentId.Value);
                 assignments?.RemoveAll(x => x.Assignment?.Id == assignmentId);
                 notifModal?.ShowConfirm("הצלחה", "המשימה נמחקה בהצלחה מהמערכת");
-                StateHasChanged();
+                StateHasChanged();*/
             }
             catch(AssignmentDeleteException ex)
             {
                 notifModal?.ShowConfirm("שגיאה", ex.Message);
             }
         }
+        return Task.CompletedTask;
     }
 }

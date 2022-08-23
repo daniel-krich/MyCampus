@@ -39,7 +39,7 @@
                                         <tbody>
                                             @foreach (var submission in assignment.AssignmentSubmissions)
                                             {
-                                                <tr role="button" @onclick="@(() => navigationService.NavigateTo($"/lecturer/submission-check/{submission.Id}"))">
+                                                <tr role="button" @onclick="@(() => navigationService.NavigateTo($"/lecturer/assignment-submission-check/{submission.Id}"))">
                                                     <td>@submission.Student.FirstName @submission.Student.LastName</td>
                                                     <td>@submission.SubmittedAt.ToLongDateHebrewString()</td>
                                                     <td>

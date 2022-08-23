@@ -39,9 +39,9 @@
                                 <div class="dropdown dropend position-absolute top-0 start-0">
                                   <button class="btn btn-sm btn-light" type="button" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
                                   <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
-                                    <li><NavLink class="dropdown-item" href="@($"/lecturer/class/{classModel.Class?.Id}/assignments")" Match="NavLinkMatch.All" type="button">צפייה במשימות</NavLink></li>
-                                    <li><NavLink class="dropdown-item" href="/" Match="NavLinkMatch.All" type="button">צפייה במבחנים</NavLink></li>
-                                    <li><NavLink class="dropdown-item" href="/" Match="NavLinkMatch.All" type="button">צפייה בסטודנטים</NavLink></li>
+                                    <li><a class="dropdown-item" href="@($"/lecturer/class/{classModel.Class?.Id}/assignments")" type="button">צפייה במשימות</a></li>
+                                    <li><a class="dropdown-item" href="@($"/lecturer/class/{classModel.Class?.Id}/quizzes")" type="button">צפייה בחידונים</a></li>
+                                    <li><a class="dropdown-item" href="/" type="button">צפייה בסטודנטים</a></li>
                                   </ul>
                                 </div>
                             </div>

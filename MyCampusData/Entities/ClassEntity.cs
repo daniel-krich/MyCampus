@@ -17,6 +17,7 @@ namespace MyCampusData.Entities
         public virtual ICollection<UserClassEntity> Students { get; set; }
         public virtual ICollection<ClassMeetingEntity> Meetings { get; set; }
         public virtual ICollection<ClassAssignmentEntity> Assignments { get; set; }
+        public virtual ICollection<ClassQuizEntity> Quizzes { get; set; }
         public Guid CourseId { get; set; }
         public virtual CourseEntity Course { get; set; }
 #nullable enable

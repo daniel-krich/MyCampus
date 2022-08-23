@@ -18,6 +18,16 @@
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
+
+    <div class="main-loading-content">
+        <div class="d-flex flex-column align-items-center">
+            <div class="spinner-grow" role="status">
+            </div>
+            <span class="h3 text-muted rtl mt-4">הקמפוס נטען</span>
+            <span class="dot-loading"></span>
+        </div>
+    </div>
+
     @RenderBody()
 
     <div id="blazor-error-ui">

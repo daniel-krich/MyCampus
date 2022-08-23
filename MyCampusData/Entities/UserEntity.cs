@@ -24,6 +24,8 @@ namespace MyCampusData.Entities
         public virtual ICollection<UserClassEntity> Classes { get; set; }
         public virtual ICollection<ClassEntity> LecturingClasses { get; set; }
         public virtual ICollection<SessionEntity> Sessions { get; set; }
+        public virtual ICollection<ClassAssignmentSubmissionEntity> AssignmentSubmissions { get; set; }
+        public virtual ICollection<ClassQuizSubmissionEntity> ExamSubmissions { get; set; }
 
         [Required, MaxLength(30)]
         public string FirstName { get; set; }

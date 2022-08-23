@@ -13,6 +13,10 @@ namespace MyCampusData.Data
     {
 #nullable disable
         public DbSet<UserEntity> Users { get; set; }
+        public DbSet<ClassQuizEntity> ClassQuizzes { get; set; }
+        public DbSet<ClassQuizQuestionEntity> ClassQuizQuestions { get; set; }
+        public DbSet<ClassQuizAnswerEntity> ClassQuizAnswers { get; set; }
+        public DbSet<ClassQuizSubmissionEntity> ClassQuizSubmissions { get; set; }
         public DbSet<CourseEntity> Courses { get; set; }
         public DbSet<ClassAssignmentEntity> ClassAssignments { get; set; }
         public DbSet<ClassAssignmentSubmissionEntity> ClassAssignmentSubmissions { get; set; }
@@ -86,6 +90,11 @@ namespace MyCampusData.Data
                 .WithMany(x => x.LecturingClasses)
                 .HasForeignKey(x => x.LecturerId);
 
+            modelBuilder.Entity<ClassEntity>()
+                .HasMany(x => x.Quizzes)
+                .WithOne(x => x.Class)
+                .HasForeignKey(x => x.ClassId);
+
             modelBuilder.Entity<ClassAssignmentEntity>()
                 .HasOne(x => x.Class)
                 .WithMany(x => x.Assignments)
@@ -100,6 +109,46 @@ namespace MyCampusData.Data
                 .HasOne(x => x.Assignment)
                 .WithMany(x => x.AssignmentSubmissions)
                 .HasForeignKey(x => x.AssignmentId);
+
+            modelBuilder.Entity<ClassAssignmentSubmissionEntity>()
+                .HasOne(x => x.Student)
+                .WithMany(x => x.AssignmentSubmissions)
+                .HasForeignKey(x => x.StudentId);
+
+            modelBuilder.Entity<ClassQuizEntity>()
+                .HasOne(x => x.Class)
+                .WithMany(x => x.Quizzes)
+                .HasForeignKey(x => x.ClassId);
+
+            modelBuilder.Entity<ClassQuizEntity>()
+                .HasMany(x => x.Questions)
+                .WithOne(x => x.Exam)
+                .HasForeignKey(x => x.ExamId);
+
+            modelBuilder.Entity<ClassQuizQuestionEntity>()
+                .HasOne(x => x.Exam)
+                .WithMany(x => x.Questions)
+                .HasForeignKey(x => x.ExamId);
+
+            modelBuilder.Entity<ClassQuizQuestionEntity>()
+                .HasMany(x => x.Answers)
+                .WithOne(x => x.Question)
+                .HasForeignKey(x => x.QuestionId);
+
+            modelBuilder.Entity<ClassQuizAnswerEntity>()
+                .HasOne(x => x.Question)
+                .WithMany(x => x.Answers)
+                .HasForeignKey(x => x.QuestionId);
+
+            modelBuilder.Entity<ClassQuizSubmissionEntity>()
+                .HasOne(x => x.Exam)
+                .WithMany(x => x.Submissions)
+                .HasForeignKey(x => x.ExamId);
+
+            modelBuilder.Entity<ClassQuizSubmissionEntity>()
+                .HasOne(x => x.Student)
+                .WithMany(x => x.ExamSubmissions)
+                .HasForeignKey(x => x.StudentId);
         }
     }
 }
