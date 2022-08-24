@@ -107,13 +107,32 @@ namespace MyCampusData.Extensions
                           select quiz.Id).LongCountAsync();
         }
 
-        public static async Task<List<ClassQuizModel>> GetClassQuizzesPaginationAsync(this CampusContext ctx, Guid classId, int pageId, int examsPerPage)
+        public static async Task<List<ClassQuizModel>> GetClassQuizzesPaginationAsync(this CampusContext ctx, Guid classId, int pageId, int quizzesPerPage)
         {
             return await (from classEntity in ctx.Classes
                           join quiz in ctx.ClassQuizzes on classEntity.Id equals quiz.ClassId
                           where classEntity.Id == classId
                           orderby quiz.CreatedAt descending
-                          select new ClassQuizModel { Quiz = quiz, QuizSubmissionsCount = quiz.Submissions.LongCount() }).Skip((pageId - 1) * examsPerPage).Take(examsPerPage).ToListAsync();
+                          select new ClassQuizModel { Quiz = quiz, QuizSubmissionsCount = quiz.Submissions.LongCount() }).Skip((pageId - 1) * quizzesPerPage).Take(quizzesPerPage).ToListAsync();
+        }
+
+        public static async Task<long> GetStudentQuizzesCountAsync(this CampusContext ctx, Guid studentId)
+        {
+            return await (from userClass in ctx.UserClasses
+                          join quizzes in ctx.ClassQuizzes on userClass.ClassId equals quizzes.ClassId
+                          where userClass.StudentId == studentId
+                          select quizzes.Id).LongCountAsync();
+        }
+
+        public static async Task<List<StudentQuizModel>> GetStudentQuizzesPaginationAsync(this CampusContext ctx, Guid studentId, int pageId, int quizzesPerPage)
+        {
+            return await (from userClass in ctx.UserClasses.Include(x => x.Class).ThenInclude(x => x.Course)
+                          join quiz in ctx.ClassQuizzes on userClass.ClassId equals quiz.ClassId
+                          join userQuizSubmission in ctx.ClassQuizSubmissions on quiz.Id equals userQuizSubmission.QuizId into userQuizSubmissions
+                          from userQuizSubmissionOrDefault in userQuizSubmissions.DefaultIfEmpty()
+                          where userClass.StudentId == studentId
+                          orderby quiz.CreatedAt descending
+                          select new StudentQuizModel { Quiz = quiz, Class = userClass.Class, Course = userClass.Class.Course, QuizSubmission = userQuizSubmissionOrDefault }).Skip((pageId - 1) * quizzesPerPage).Take(quizzesPerPage).ToListAsync();
         }
     }
 }

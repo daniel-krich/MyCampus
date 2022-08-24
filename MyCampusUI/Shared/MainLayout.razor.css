@@ -4,6 +4,7 @@
     flex-direction: column;
     direction: rtl;
     background-color: #fff;
+    min-height: 100vh;
 }
 
 main {

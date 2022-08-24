@@ -12,8 +12,8 @@ namespace MyCampusData.Entities
 #nullable disable
         [Required, MaxLength(80)]
         public string Question { get; set; }
-        public Guid ExamId { get; set; }
-        public virtual ClassQuizEntity Exam { get; set; }
+        public Guid QuizId { get; set; }
+        public virtual ClassQuizEntity Quiz { get; set; }
         public virtual ICollection<ClassQuizAnswerEntity> Answers { get; set; }
     }
 }

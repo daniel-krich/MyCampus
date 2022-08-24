@@ -9,8 +9,8 @@ namespace MyCampusData.Entities
     public class ClassQuizSubmissionEntity : BaseEntity
     {
 #nullable disable
-        public Guid ExamId { get; set; }
-        public virtual ClassQuizEntity Exam { get; set; }
+        public Guid QuizId { get; set; }
+        public virtual ClassQuizEntity Quiz { get; set; }
 
         public Guid StudentId { get; set; }
         public virtual UserEntity Student { get; set; }

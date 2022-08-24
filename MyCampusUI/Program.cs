@@ -18,6 +18,7 @@ builder.Services.AddScoped<IAuthenticationStateService, AuthenticationStateServi
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICustomNavigationService, CustomNavigationService>();
 builder.Services.AddScoped<IAssignmentManagerService, AssignmentManagerService>();
+builder.Services.AddScoped<IQuizManagerService, QuizManagerService>();
 builder.Services.AddDbContextFactory<CampusContext>();
 
 builder.Services.AddAuthentication(opt =>

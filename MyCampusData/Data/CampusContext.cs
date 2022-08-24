@@ -122,13 +122,13 @@ namespace MyCampusData.Data
 
             modelBuilder.Entity<ClassQuizEntity>()
                 .HasMany(x => x.Questions)
-                .WithOne(x => x.Exam)
-                .HasForeignKey(x => x.ExamId);
+                .WithOne(x => x.Quiz)
+                .HasForeignKey(x => x.QuizId);
 
             modelBuilder.Entity<ClassQuizQuestionEntity>()
-                .HasOne(x => x.Exam)
+                .HasOne(x => x.Quiz)
                 .WithMany(x => x.Questions)
-                .HasForeignKey(x => x.ExamId);
+                .HasForeignKey(x => x.QuizId);
 
             modelBuilder.Entity<ClassQuizQuestionEntity>()
                 .HasMany(x => x.Answers)
@@ -141,9 +141,9 @@ namespace MyCampusData.Data
                 .HasForeignKey(x => x.QuestionId);
 
             modelBuilder.Entity<ClassQuizSubmissionEntity>()
-                .HasOne(x => x.Exam)
+                .HasOne(x => x.Quiz)
                 .WithMany(x => x.Submissions)
-                .HasForeignKey(x => x.ExamId);
+                .HasForeignKey(x => x.QuizId);
 
             modelBuilder.Entity<ClassQuizSubmissionEntity>()
                 .HasOne(x => x.Student)

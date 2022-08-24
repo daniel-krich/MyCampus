@@ -3,6 +3,7 @@
 
 @inject IAuthenticationStateService authenticationState
 @inject ICustomNavigationService navigationManager
+@inject IQuizManagerService quizManager
 @inject IAssignmentManagerService assignmentManager
 @inject IDbContextFactory<CampusContext> campusContextFactory
 
@@ -43,26 +44,42 @@
                                 <div class="card-body mt-3">
                                     <p class="card-title h4 mb-4">@quiz.Quiz?.Title</p>
                                     <div class="card-text">
-                                        <p class="mb-3">סך הכל הוגשו <strong>@quiz.QuizSubmissionsCount</strong> פתרונות</p>
+                                        <p class="mb-3">סך הכל הוגש <strong>@quiz.QuizSubmissionsCount</strong> פעמים</p>
                                         <p class="mb-2"><small>תאריך יצירה: @(quiz.Quiz!.CreatedAt.ToLongDateHebrewString())</small></p>
-                                        <p class="mb-2"><small>פתוח: @(quiz.Quiz.IsOpen ? "כן" : "לא")</small></p>
+                                        <p class="mb-2"><small>פתוח: <b>@(quiz.Quiz.IsOpen ? "כן" : "לא")</b></small></p>
                                     </div>
                                 </div>
                                 <div class="dropdown dropend position-absolute top-0 start-0">
-                                  <button class="btn btn-sm btn-light" type="button" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
-                                  <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
-                                    <li><a class="dropdown-item" href="@($"/lecturer/exam/{quiz.Quiz?.ClassId}/submissions")" type="button">צפייה בהגשות</a></li>
-                                    <li>
-                                        <AsyncLoadingButton class="dropdown-item" ButtonTask="@((c) => OnQuizDelete(quiz.Quiz?.Id))">מחיקת המבחן</AsyncLoadingButton>
-                                    </li>
-                                  </ul>
+                                    <button class="btn btn-sm btn-light" type="button" data-bs-auto-close="outside" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
+                                    <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
+                                        <li>
+                                            <a class="dropdown-item" href="@($"/lecturer/quiz/{quiz.Quiz?.Id}/edit")" type="button">עריכת החידון</a>
+                                        </li>
+
+                                        <li>
+                                            <AsyncLoadingButton class="dropdown-item" ButtonTask="@((c) => OnQuizToggle(quiz.Quiz?.Id))">
+                                                @if(quiz.Quiz?.IsOpen == true)
+                                                {
+                                                    <span>סגור חידון</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>פתח חידון</span>
+                                                }
+                                            </AsyncLoadingButton>
+                                        </li>
+
+                                        <li>
+                                            <AsyncLoadingButton class="dropdown-item" ButtonTask="@((c) => OnQuizDelete(quiz.Quiz?.Id))">מחיקת החידון</AsyncLoadingButton>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     }
                 </div>
                 <nav class="d-flex justify-content-center mt-5">
-                    <Pagination @ref="classQuizzesPagination" UrlPagination="@($"/lecturer/class/{ClassId}/assignments/")" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="quizzesPages" />
+                    <Pagination @ref="classQuizzesPagination" UrlPagination="@($"/lecturer/class/{ClassId}/quizzes/")" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="quizzesPages" />
                 </nav>
             }
             else
@@ -137,22 +154,50 @@
         }
     }
 
-    private Task OnQuizDelete(Guid? quizId)
+    private async Task OnQuizDelete(Guid? quizId)
     {
-        if(classModel?.Class?.Id is Guid classId && quizId.HasValue)
+        if (classModel?.Class?.Id is Guid classId && quizId.HasValue)
         {
             try
             {
-                /*await assignmentManager.DeleteLecturerAssignment(classId, assignmentId.Value);
-                assignments?.RemoveAll(x => x.Assignment?.Id == assignmentId);
-                notifModal?.ShowConfirm("הצלחה", "המשימה נמחקה בהצלחה מהמערכת");
-                StateHasChanged();*/
+                await quizManager.DeleteLecturerQuiz(classModel.Class.Id, quizId.Value);
+                quizzes?.RemoveAll(x => x.Quiz?.Id == quizId.Value);
+                notifModal?.ShowConfirm("הצלחה", "החידון נמחק בהצלחה מהמערכת");
+                StateHasChanged();
             }
-            catch(AssignmentDeleteException ex)
+            catch(QuizDeleteException ex)
             {
                 notifModal?.ShowConfirm("שגיאה", ex.Message);
             }
+            catch
+            {
+                notifModal?.ShowConfirm("שגיאה", "שגיאה לא ידועה באת מחיקת החידון");
+            }
         }
-        return Task.CompletedTask;
+    }
+
+    private async Task OnQuizToggle(Guid? quizId)
+    {
+        if (classModel?.Class?.Id is Guid classId && quizId.HasValue)
+        {
+            try
+            {
+                await quizManager.ToggleQuizState(classModel.Class.Id, quizId.Value);
+                var quiz = quizzes?.Find(x => x.Quiz?.Id == quizId.Value);
+                if(quiz != null && quiz.Quiz != null)
+                {
+                    quiz.Quiz.IsOpen = !quiz.Quiz.IsOpen;
+                }
+                StateHasChanged();
+            }
+            catch(QuizToggleStatusException ex)
+            {
+                notifModal?.ShowConfirm("שגיאה", ex.Message);
+            }
+            catch
+            {
+                notifModal?.ShowConfirm("שגיאה", "שגיאה לא ידועה באת שינוי הסטטוס לחידון");
+            }
+        }
     }
 }

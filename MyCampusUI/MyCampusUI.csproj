@@ -4,12 +4,16 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DebugType>embedded</DebugType>
+    <RunAnalyzersDuringBuild>True</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>True</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
+	<PackageReference Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" Version="3.2.0-rc1.20223.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,15 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyCampusData\MyCampusData.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Attributes\" />
-    <Folder Include="Pages\Staff\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Shared/Navigation/*.razor.css" CssScope="inherit-scope" />
   </ItemGroup>
 
 </Project>

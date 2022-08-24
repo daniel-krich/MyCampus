@@ -1,0 +1,85 @@
+﻿@page "/student/quiz/{QuizId:guid}"
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationService
+@inject IQuizManagerService quizManager
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
+
+    @if(quiz != null)
+    {
+        <div class="container">
+
+            <p class="h3 text-center mb-4">@quiz.Title</p>
+
+            @{ var questionId = 0; }
+            @foreach(var question in quiz.Questions.OrderBy(_ => Random.Shared.Next()))
+            {
+                questionId++;
+
+                <div class="question-box mb-5 position-relative">
+                    <p class="h5 mb-2">@(questionId). @(question.Question)</p>
+
+                    @{ var answerId = 0; }
+                    @foreach(var answer in question.Answers.OrderBy(_ => Random.Shared.Next()))
+                    {
+                        answerId++;
+                        <div class="d-flex flex-row align-items-center mb-2">
+                            <input class="form-check-input ms-2 me-4" type="radio" id="@($"q_{questionId}_a_{answerId}")" name="@($"q_{questionId}")">
+                            <label for="@($"q_{questionId}_a_{answerId}")">@answer.Answer</label>
+                        </div>
+                    }
+                </div>
+            }
+
+
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-dark mb-1">
+                    @if (inAction)
+                    {
+                        <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+                    }
+                    <span>להגשה</span>
+                </button>
+            </div>
+        </div>
+    }
+
+</RenderPermission>
+
+@code {
+    [Parameter] public Guid QuizId { get; set; }
+
+    private ClassQuizEntity? quiz;
+
+    private bool inAction;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.User?.Id != null)
+            {
+                var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == authenticationState.User.Id);
+                if(user != null)
+                {
+                    quiz = await (from userClass in dbContext.UserClasses
+                                      join classQuiz in dbContext.ClassQuizzes.Include(x => x.Questions).ThenInclude(x => x.Answers) on userClass.ClassId equals classQuiz.ClassId
+                                      where userClass.StudentId == user.Id && classQuiz.Id == QuizId && classQuiz.IsOpen
+                                      select classQuiz).FirstOrDefaultAsync();
+                    if(quiz == null)
+                    {
+                        navigationService.NavigatePreviousOrDefault(true);
+                    }
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
+                }
+            }
+        }
+    }
+}
+
+

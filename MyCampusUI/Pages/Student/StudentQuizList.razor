@@ -1,13 +1,117 @@
 ﻿@page "/student/quizzes"
+@page "/student/quizzes/{PageId:int}"
 
 @inject IAuthenticationStateService authenticationState
 
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationManager
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
 <RenderPermission Permission="UserPermissionsEnum.Student" RedirectIfInvalid="true">
 
-    <h3>Student quizzes</h3>
+    <div class="container mb-4">
+        <h2 class="mb-4">כל החידונים שלי</h2>
+
+        @if(quizzes != null)
+        {
+            @if (quizzes.Count > 0)
+            {
+            
+                var numFrom = PageId <= 1 ? 1 : (PageId - 1) * quizzesPerPage;
+                var numTo = (PageId * quizzesPerPage) > quizzesCount ? quizzesCount : (PageId * quizzesPerPage);
+            
+                <p>מציג @numFrom ועד @numTo מתוך @quizzesCount תוצאות</p>
+                <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
+                    @foreach (var quiz in quizzes)
+                    {
+                        <div role="button" class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column" disabled="@(quiz.Quiz?.IsOpen == false)" @onclick="@(() => navigationManager.NavigateTo($"/student/quiz/{quiz.Quiz?.Id}"))">
+                            <div class="card h-100 w-100 shadow-sm position-relative">
+                                @if(quiz.Quiz?.IsOpen == true)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                                        פתוח
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        סגור
+                                    </span>
+                                }
+                                @if (quiz.QuizSubmission != null)
+                                {
+
+                                    <h5>
+                                        <span class="position-absolute top-100 start-50 translate-middle badge bg-dark text-wrap">
+                                            ניקוד: @quiz.QuizSubmission?.Score
+                                        </span>
+                                    </h5>
+                                }
+                                <div class="card-body">
+                                    <p class="card-title h4 mb-4">@quiz.Quiz?.Title</p>
+                                    <div class="card-text">
+                                        <p class="h6">@quiz.Course?.Name</p>
+                                        <p class="h6 mb-4">@quiz.Class?.Name</p>
+                                        <p class="mb-2"><small>נוצר בתאריך: @(quiz.Quiz?.CreatedAt.ToLongDateHebrewString())</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <nav class="d-flex justify-content-center mt-5">
+                    <Pagination @ref="quizzesPagination" UrlPagination="/student/quizzes/" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="quizzesPages" />
+                </nav>
+            }
+            else
+            {
+                <h4 class="text-muted">לא נמצאו חידונים</h4>
+            }
+        }
+    </div>
 
 </RenderPermission>
 
 @code {
+    private List<StudentQuizModel>? quizzes;
 
+    private Pagination? quizzesPagination;
+
+    private int quizzesPerPage = 9;
+    private int pagesBufferRange = 5;
+
+    private long quizzesPages;
+    private long quizzesCount;
+
+    [Parameter] public int PageId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageId = PageId <= 0 ? 1 : PageId;
+
+        quizzesPagination?.SetCurrentPage(PageId);
+
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.User?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
+                if(user != null)
+                {
+
+                    quizzesCount = await dbContext.GetStudentQuizzesCountAsync(user.Id);
+
+                    quizzesPages = Convert.ToInt64(Math.Ceiling((double)quizzesCount / quizzesPerPage));
+
+                    quizzesPagination?.SetPagesCount(quizzesPages);
+
+                    quizzes = await dbContext.GetStudentQuizzesPaginationAsync(user.Id, PageId, quizzesPerPage);
+                }
+                else
+                {
+                    navigationManager.NavigatePreviousOrDefault(true);
+                }
+            }
+        }
+    }
 }
