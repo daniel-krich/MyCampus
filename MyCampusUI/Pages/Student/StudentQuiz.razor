@@ -25,7 +25,7 @@
         {
             <div class="container">
 
-                <p class="h3 text-center mb-4">@quiz.Title</p>
+                <p class="h3 text-center mb-5">@quiz.Title</p>
 
                 @{
                     var questionId = 0;
@@ -52,8 +52,8 @@
                 }
 
 
-                <div class="d-flex justify-content-center">
-                    <AsyncLoadingButton class="btn btn-dark mb-1" ButtonTask="@((c) => OnSubmitQuiz())">
+                <div class="d-flex justify-content-center mb-5">
+                    <AsyncLoadingButton class="btn btn-dark" ButtonTask="@((c) => OnSubmitQuiz())">
                         <span>להגשה</span>
                     </AsyncLoadingButton>
                 </div>
