@@ -11,6 +11,10 @@ html, body {
     pointer-events: none;
 }
 
+a {
+    text-decoration: none;
+}
+
 ::-webkit-scrollbar {
     width: 5px;
 }

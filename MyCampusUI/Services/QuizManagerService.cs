@@ -123,5 +123,48 @@ namespace MyCampusUI.Services
                 throw new QuizToggleStatusException("שגיאה באת שינוי הסטטוס של החידון, החידון לא נימצא או שאין מספיק הרשאות");
             }
         }
+
+        public async Task SubmitQuiz(Guid quizId, float score)
+        {
+            using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
+            {
+                if (_authenticationState.User?.Id is Guid UserId)
+                {
+                    var user = await dbContext.Users.FindAsync(UserId);
+                    if (user is not null && user.Permissions == UserPermissionsEnum.Student)
+                    {
+                        var quizEntity = await (from userClass in dbContext.UserClasses
+                                                join quiz in dbContext.ClassQuizzes on userClass.ClassId equals quiz.ClassId
+                                                where userClass.StudentId == user.Id && quiz.Id == quizId && quiz.IsOpen
+                                                select quiz).FirstOrDefaultAsync();
+                        if(quizEntity != null)
+                        {
+                            var submittedEntity = await (from quizsub in dbContext.ClassQuizSubmissions
+                                                         where quizsub.StudentId == user.Id && quizsub.QuizId == quizEntity.Id
+                                                         select quizsub).FirstOrDefaultAsync();
+                            if(submittedEntity != null)
+                            {
+                                submittedEntity.Score = score;
+                                await dbContext.SaveChangesAsync();
+                            }
+                            else
+                            {
+                                var submitNew = new ClassQuizSubmissionEntity
+                                {
+                                    StudentId = user.Id,
+                                    QuizId = quizEntity.Id,
+                                    Score = score
+                                };
+
+                                dbContext.ClassQuizSubmissions.Add(submitNew);
+                                await dbContext.SaveChangesAsync();
+                            }
+                            return;
+                        }
+                    }
+                }
+                throw new QuizSubmitException("אירעה שגיאה באת הגשת החידון, החידון לא נמצא או לא זמין כרגע או שחסרים הרשאות");
+            }
+        }
     }
 }
