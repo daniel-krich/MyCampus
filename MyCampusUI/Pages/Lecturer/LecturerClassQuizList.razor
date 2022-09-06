@@ -26,7 +26,7 @@
                     @if (PageId == 1)
                     {
                         <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
-                            <div class="card card-new-assignment h-100 w-100 position-relative">
+                            <div class="card card-new-quiz h-100 w-100 position-relative">
                                 <div class="card-body">
                                     <a class="d-flex justify-content-center align-items-center h-100 h3" href="@($"/lecturer/class/{classModel.Class?.Id}/quiz/create")">
                                         <i class="fa-solid fa-plus ms-1"></i>
@@ -53,7 +53,7 @@
                                     <button class="btn btn-sm btn-light" type="button" data-bs-auto-close="outside" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
                                     <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
                                         <li>
-                                            <a class="dropdown-item" href="@($"/lecturer/quiz/{quiz.Quiz?.Id}/edit")" type="button">עריכת החידון</a>
+                                            <a class="dropdown-item" href="@($"/lecturer/quiz/{quiz.Quiz?.Id}/edit")" type="button" disabled>עריכת החידון</a>
                                         </li>
 
                                         <li>
@@ -88,7 +88,7 @@
                 <p class="h4 text-center text-muted mb-5">צרו את החידון הראשון של הכיתה</p>
 
                 <div class="row justify-content-center">
-                    <a class="new-assignment-empty h5" href="@($"/lecturer/class/{classModel.Class?.Id}/quiz/create")">
+                    <a class="new-quiz-empty h5" href="@($"/lecturer/class/{classModel.Class?.Id}/quiz/create")">
                         <i class="fa-solid fa-plus ms-1"></i>
                         <span>חידון חדש</span>
                     </a>

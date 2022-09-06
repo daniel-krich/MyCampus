@@ -27,5 +27,5 @@
   <ItemGroup>
     <ProjectReference Include="..\MyCampusData\MyCampusData.csproj" />
   </ItemGroup>
-
+	
 </Project>

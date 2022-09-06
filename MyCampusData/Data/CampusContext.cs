@@ -50,6 +50,8 @@ namespace MyCampusData.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
+            //
+
             modelBuilder.Entity<UserEntity>()
                 .HasMany(x => x.Sessions)
                 .WithOne(x => x.User)

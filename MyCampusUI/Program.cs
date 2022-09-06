@@ -19,6 +19,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICustomNavigationService, CustomNavigationService>();
 builder.Services.AddScoped<IAssignmentManagerService, AssignmentManagerService>();
 builder.Services.AddScoped<IQuizManagerService, QuizManagerService>();
+builder.Services.AddScoped<ICourseManagerService, CourseManagerService>();
 builder.Services.AddDbContextFactory<CampusContext>();
 
 builder.Services.AddAuthentication(opt =>

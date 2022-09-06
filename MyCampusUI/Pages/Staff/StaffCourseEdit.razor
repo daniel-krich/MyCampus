@@ -1,0 +1,121 @@
+﻿@page "/staff/course/{CourseId:guid}/edit"
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationService
+@inject IJSRuntime jsRuntime
+@inject ICourseManagerService courseManager
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Staff" RedirectIfInvalid="true">
+
+    <div class="container mb-4">
+        @if (course != null)
+        {
+            <h2 class="mb-4">עדכון קורס - @course.Name</h2>
+
+            <div class="row p-3">
+                <div class="col-12">
+                    <div class="card shadow-sm position-relative">
+                        <button class="btn-sm btn-dark fw-bold shadow-sm position-absolute top-0 start-0 translate-middle" @onclick="@(() => navigationService.NavigateTo($"/staff/courses"))">
+                            חזור <span class="oi oi-arrow-left"></span>
+                        </button>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <h1 class="mb-3">פרטי הקורס</h1>
+                            </div>
+                            <div class="mt-4">
+                                <EditForm Context="CourseUpdateContext" OnValidSubmit="@OnCourseUpdate" Model="this.courseCreation">
+                                    <DataAnnotationsValidator />
+                                    <div class="form-group">
+                                        <input type="text" class="form-control mb-3" placeholder="שם הקורס" @bind="courseCreation.Name" maxlength="128" required/>
+
+                                        <textarea class="form-control mb-3" cols="20" placeholder="אודות הקורס" rows="3" @bind="courseCreation.Description" maxlength="255" required/>
+
+                                        <div class="form-group text-center mt-3 mb-3">
+                                            <button type="submit" class="btn btn-dark mb-1">
+                                                @if (inAction)
+                                                {
+                                                    <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+                                                }
+                                                <span>עדכון הקורס</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </EditForm>
+                            </div>
+                            <div class="mt-2">
+                                <DismissibleAlert @ref="alert" class="m-2 shadow-sm"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</RenderPermission>
+
+@code {
+    [Parameter] public Guid CourseId { get; set; }
+
+    private CourseCreationModel courseCreation = new();
+    private CourseEntity? course;
+
+    private DismissibleAlert? alert;
+
+    private bool inAction;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.User?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
+                if(user != null)
+                {
+                    course = await dbContext.Courses.FindAsync(CourseId);
+
+                    if(course != null)
+                    {
+                        courseCreation.Name = course.Name;
+                        courseCreation.Description = course.Description;
+                    }
+                    else
+                    {
+                        navigationService.NavigatePreviousOrDefault(true);
+                    }
+                }
+                else
+                {
+                    navigationService.NavigatePreviousOrDefault(true);
+                }
+            }
+        }
+    }
+
+    private async Task OnCourseUpdate()
+    {
+        if (!inAction)
+        {
+            try
+            {
+                inAction = true;
+                course = await courseManager.UpdateCourse(CourseId, courseCreation);
+                alert?.ShowSuccess("הקורס עודכן בהצלחה");
+            }
+            catch(CourseCreateUpdateException ex)
+            {
+                alert?.ShowWarning(ex.Message);
+            }
+            catch
+            {
+                alert?.ShowError("אירעה שגיאה באת עדכון הקורס");
+            }
+            finally
+            {
+                inAction = false;
+            }
+        }
+    }
+}

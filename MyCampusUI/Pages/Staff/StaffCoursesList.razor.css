@@ -1,16 +1,16 @@
-﻿.card-new-quiz {
+﻿.card-new-course {
     background-color: #fafafa;
     box-shadow: 0px 0px 10px #30303060;
     border: 2px dashed #303030cc;
 }
 
-.card-new-quiz > div > a {
+.card-new-course > div > a {
     outline: none;
     text-decoration: none;
     color: #303030;
 }
 
-.new-quiz-empty {
+.new-course-empty {
     padding: 20px;
     border-radius: 15px;
 

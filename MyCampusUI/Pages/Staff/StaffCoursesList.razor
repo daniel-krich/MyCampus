@@ -1,0 +1,126 @@
+﻿@page "/staff/courses"
+@page "/staff/courses/{PageId:int}"
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationManager
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Staff" RedirectIfInvalid="true">
+
+    <div class="container mb-4">
+        <h2 class="mb-4">כל הקורסים</h2>
+
+        @if(courses != null)
+        {
+            @if (courses.Count > 0)
+            {
+            
+                var numFrom = PageId <= 1 ? 1 : (PageId - 1) * coursesPerPage;
+                var numTo = (PageId * coursesPerPage) > coursesCount ? coursesCount : (PageId * coursesPerPage);
+            
+                <p>מציג @numFrom ועד @numTo מתוך @coursesCount תוצאות</p>
+                <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
+                    @if (PageId == 1)
+                    {
+                        <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
+                            <div class="card card-new-course h-100 w-100 position-relative">
+                                <div class="card-body">
+                                    <a class="d-flex justify-content-center align-items-center h-100 h3" href="@($"/staff/course/create")">
+                                        <i class="fa-solid fa-plus ms-1"></i>
+                                        <span>קורס חדש</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @foreach (var course in courses)
+                    {
+                        <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
+                            <div class="card h-100 w-100 shadow-sm position-relative">
+                                <div class="card-body mt-3">
+                                    <p class="card-title h4 mb-4">@course.Course?.Name</p>
+                                    <div class="card-text">
+                                        <p class="text-muted">
+                                            <small>@course.Course?.Description</small>
+                                        </p>
+                                        <p class="text-muted">
+                                            <small>סה"כ כיתות: @course.ClassesCount</small>
+                                        </p>
+                                        <p class="text-muted">
+                                            <small>נוצר: @course.Course?.CreatedAt.ToLongDateHebrewString()</small>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="dropdown dropend position-absolute top-0 start-0">
+                                  <button class="btn btn-sm btn-light" type="button" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
+                                  <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
+                                    <li><a class="dropdown-item" href="@($"/staff/course/{course.Course?.Id}/edit")" type="button">עריכת הקורס</a></li>
+                                    <li><a class="dropdown-item" href="@($"/staff/course/{course.Course?.Id}/classes")" type="button">צפייה בכיתות</a></li>
+                                  </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <nav class="d-flex justify-content-center mt-5">
+                    <Pagination @ref="coursesPagination" UrlPagination="/staff/courses/" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="coursesPages" />
+                </nav>
+            }
+            else
+            {
+                <p class="h2 text-center mt-5 mb-5">לא נמצאו קורסים</p>
+
+                <div class="row justify-content-center">
+                    <a class="new-course-empty h5" href="@($"/staff/course/create")">
+                        <i class="fa-solid fa-plus ms-1"></i>
+                        <span>קורס חדש</span>
+                    </a>
+                </div>
+            }
+        }
+    </div>
+
+</RenderPermission>
+
+@code {
+    [Parameter] public int PageId { get; set; }
+
+    private List<CourseModel>? courses;
+
+    private Pagination? coursesPagination;
+
+    private int coursesPerPage = 9;
+    private int pagesBufferRange = 5;
+
+    private long coursesPages;
+    private long coursesCount;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageId = PageId <= 0 ? 1 : PageId;
+
+        coursesPagination?.SetCurrentPage(PageId);
+
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.User?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
+                if(user != null)
+                {
+                    coursesCount = await dbContext.GetAllCoursesCountAsync();
+
+                    coursesPages = Convert.ToInt64(Math.Ceiling((double)coursesCount / coursesPerPage));
+
+                    coursesPagination?.SetPagesCount(coursesPages);
+
+                    courses = await dbContext.GetAllCoursesPaginationAsync(PageId, coursesPerPage);
+                }
+                else
+                {
+                    navigationManager.NavigatePreviousOrDefault(true);
+                }
+            }
+        }
+    }
+}

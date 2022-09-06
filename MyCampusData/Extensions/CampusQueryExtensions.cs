@@ -134,5 +134,16 @@ namespace MyCampusData.Extensions
                           orderby quiz.CreatedAt descending
                           select new StudentQuizModel { Quiz = quiz, Class = userClass.Class, Course = userClass.Class.Course, QuizSubmission = userQuizSubmissionOrDefault }).Skip((pageId - 1) * quizzesPerPage).Take(quizzesPerPage).ToListAsync();
         }
+
+        public static async Task<long> GetAllCoursesCountAsync(this CampusContext ctx)
+        {
+            return await (from course in ctx.Courses select course.Id).LongCountAsync();
+        }
+
+        public static async Task<List<CourseModel>> GetAllCoursesPaginationAsync(this CampusContext ctx, int pageId, int coursesPerPage)
+        {
+            return await (from course in ctx.Courses
+                          select new CourseModel { Course = course, ClassesCount = course.Classes.LongCount() }).Skip((pageId - 1) * coursesPerPage).Take(coursesPerPage).ToListAsync();
+        }
     }
 }
