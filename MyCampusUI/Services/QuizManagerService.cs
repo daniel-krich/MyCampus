@@ -20,6 +20,8 @@ namespace MyCampusUI.Services
 
         public async Task CreateLecturerQuiz(Guid classId, QuizCreationModel quizCreation)
         {
+            if (quizCreation.HasValidAnswersAndQuestions() == false) throw new QuizCreateException("החידון אינו תקין, חידון חייב להכיל לפחות שאלה אחת ולכל שאלה חייבת להיות תשובה מסומנת");
+
             using (var dbContext = await _campusContextFactory.CreateDbContextAsync())
             {
                 if (_authenticationState.User?.Id is Guid UserId)

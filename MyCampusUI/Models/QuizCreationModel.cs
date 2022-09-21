@@ -7,7 +7,7 @@ namespace MyCampusUI.Models
     {
         [Required, MaxLength(50)]
         public string Title { get; set; } = "";
-        public bool IsOpen { get; set; }
+        public bool IsOpen { get; set; } = true;
         [ValidateComplexType]
         public List<QuizQuestionModel> Questions { get; set; } = new();
 
@@ -19,6 +19,11 @@ namespace MyCampusUI.Models
         public void RemoveQuestion(QuizQuestionModel question)
         {
             Questions.Remove(question);
+        }
+
+        public bool HasValidAnswersAndQuestions()
+        {
+            return Questions.Count > 0 && Questions.All(x => x.Answers.Count(x => x.IsRight) == 1);
         }
     }
 
