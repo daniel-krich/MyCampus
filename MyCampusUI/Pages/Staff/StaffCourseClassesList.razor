@@ -1,0 +1,109 @@
+﻿@page "/staff/course/{CourseId:guid}/classes"
+@page "/staff/course/{CourseId:guid}/classes/{PageId:int}"
+
+@inject IAuthenticationStateService authenticationState
+@inject ICustomNavigationService navigationManager
+@inject IDbContextFactory<CampusContext> campusContextFactory
+
+<RenderPermission Permission="UserPermissionsEnum.Staff" RedirectIfInvalid="true">
+
+    <div class="container mb-4">
+        
+        @if(course != null)
+        {
+            <h2 class="mb-4">כל הכיתות של @course.Name</h2>
+
+            @if (classes?.Count > 0)
+            {
+            
+                var numFrom = PageId <= 1 ? 1 : (PageId - 1) * classesPerPage;
+                var numTo = (PageId * classesPerPage) > classesCount ? classesCount : (PageId * classesPerPage);
+            
+                <p>מציג @numFrom ועד @numTo מתוך @classesCount תוצאות</p>
+                <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-evenly">
+                    @foreach (var classEntity in classes)
+                    {
+                        <div class="col-lg-4 mb-3 d-flex align-items-stretch flex-flow-column">
+                            <div class="card h-100 w-100 shadow-sm position-relative">
+                                <div class="card-body mt-3">
+                                    <p class="card-title h4 mb-4">@classEntity.Name</p>
+                                    <div class="card-text">
+                                        <p class="h6">@course.Name</p>
+                                        <p class="text-muted">
+                                            <small>@course.Description</small>
+                                        </p>
+                                        <p class="text-muted">
+                                            <small>נוצר: @classEntity.ClassStartAt.ToLongDateHebrewString()</small>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="dropdown dropend position-absolute top-0 start-0">
+                                  <button class="btn btn-sm btn-light" type="button" id="classOptionsMenu" data-bs-toggle="dropdown"><i class="fa-solid fa-gear"></i></button>
+                                  <ul class="dropdown-menu rtl" aria-labelledby="classOptionsMenu">
+                                    <li><a class="dropdown-item" href="/" type="button">צפייה בסטודנטים</a></li>
+                                  </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <nav class="d-flex justify-content-center mt-5">
+                    <Pagination @ref="classesPagination" UrlPagination="@($"/staff/course/{CourseId}/classes")" PagesBufferRange="@pagesBufferRange" CurrentPage="PageId" CurrentPagesCount="classesPages" />
+                </nav>
+            }
+            else
+            {
+                <h4 class="text-muted">לא נמצאו כיתות</h4>
+            }
+        }
+    </div>
+
+</RenderPermission>
+
+@code {
+    private CourseEntity? course;
+    private List<ClassEntity>? classes;
+
+    private Pagination? classesPagination;
+
+    private int classesPerPage = 9;
+    private int pagesBufferRange = 5;
+
+    private long classesPages;
+    private long classesCount;
+
+    [Parameter] public Guid CourseId { get; set; }
+
+    [Parameter] public int PageId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageId = PageId <= 0 ? 1 : PageId;
+
+        classesPagination?.SetCurrentPage(PageId);
+
+        using(var dbContext = await campusContextFactory.CreateDbContextAsync())
+        {
+            if (authenticationState.User?.Id != null)
+            {
+                var user = await dbContext.Users.FindAsync(authenticationState.User.Id);
+                if(user != null && user.Permissions == UserPermissionsEnum.Staff)
+                {
+                    classesCount = await dbContext.GetAllClassesByCourseIdCountAsync(CourseId);
+
+                    classesPages = Convert.ToInt64(Math.Ceiling((double)classesCount / classesPerPage));
+
+                    classesPagination?.SetPagesCount(classesPages);
+
+                    course = await (from course in dbContext.Courses where course.Id == CourseId select course).FirstOrDefaultAsync();
+
+                    classes = await dbContext.GetAllClassesByCourseIdPaginationAsync(CourseId, PageId, classesPerPage);
+                }
+                else
+                {
+                    navigationManager.NavigatePreviousOrDefault(true);
+                }
+            }
+        }
+    }
+}

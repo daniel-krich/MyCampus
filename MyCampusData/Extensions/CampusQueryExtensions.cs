@@ -145,5 +145,21 @@ namespace MyCampusData.Extensions
             return await (from course in ctx.Courses
                           select new CourseModel { Course = course, ClassesCount = course.Classes.LongCount() }).Skip((pageId - 1) * coursesPerPage).Take(coursesPerPage).ToListAsync();
         }
+
+        public static async Task<List<ClassEntity>> GetAllClassesByCourseIdPaginationAsync(this CampusContext ctx, Guid courseId, int pageId, int classesPerPage)
+        {
+            return await (from classEntity in ctx.Classes
+                          join course in ctx.Courses on classEntity.CourseId equals course.Id
+                          where classEntity.CourseId == courseId
+                          select classEntity)
+                          .Skip((pageId - 1) * classesPerPage).Take(classesPerPage).ToListAsync();
+        }
+
+        public static async Task<long> GetAllClassesByCourseIdCountAsync(this CampusContext ctx, Guid courseId)
+        {
+            return await (from classEntity in ctx.Classes
+                          where classEntity.CourseId == courseId
+                          select classEntity.Id).LongCountAsync();
+        }
     }
 }
