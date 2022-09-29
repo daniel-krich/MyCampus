@@ -1,5 +1,5 @@
 # My campus
-### My campus is a college managment system.
+### My campus is a college management system.
 #### Tech stack consists of ASP.NET Core (Blazor-server framework) + Microsoft SQL server (EF Core code first approach).
 
 ### Core features
@@ -8,9 +8,9 @@
 - `JWT sessions`
 
 ### Features
-- `Courses managment`
-- `Classes managment`
-- `students managment`
+- `Courses management`
+- `Classes management`
+- `Students management`
 - `Meetings`
 - `Assignments`
 - `Quizzes`
