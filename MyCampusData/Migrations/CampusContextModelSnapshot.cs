@@ -844,7 +844,7 @@ namespace MyCampusData.Migrations
                         {
                             Id = new Guid("432d6f99-d2bf-4267-959f-1a039c950e0f"),
                             City = "תל-אביב",
-                            Country = "israel",
+                            Country = "ישראל",
                             CreatedAt = new DateTime(2022, 8, 13, 23, 22, 59, 582, DateTimeKind.Unspecified).AddTicks(6978),
                             Email = "alon@gmail.com",
                             FirstName = "אלון",
