@@ -15,7 +15,7 @@ namespace MyCampusData.Helpers
             string? currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if(currentDirectory == null) throw new DirectoryNotFoundException("Assembly directory not found");
             string path = "seed";
-            string fullPath = Path.Combine(currentDirectory, path, fileName);
+            string fullPath = Path.Combine(currentDirectory, @"..\..\..\..\", nameof(MyCampusData), path, fileName);
 
             var result = new List<TEntity>();
             using (StreamReader reader = new StreamReader(fullPath))

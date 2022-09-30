@@ -12,8 +12,8 @@ using MyCampusData.Data;
 namespace MyCampusData.Migrations
 {
     [DbContext(typeof(CampusContext))]
-    [Migration("20220818100000_add_LecturerNotes_LecturerEvaluation")]
-    partial class add_LecturerNotes_LecturerEvaluation
+    [Migration("20220930190805_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -69,12 +69,10 @@ namespace MyCampusData.Migrations
                     b.Property<DateTime>("EndSubmissionAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("StartSubmissionAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -101,8 +99,8 @@ namespace MyCampusData.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LecturerEvaluation")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("LecturerNotes")
                         .HasMaxLength(1024)
@@ -110,10 +108,6 @@ namespace MyCampusData.Migrations
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SubmissionFileUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("SubmissionText")
                         .IsRequired()
@@ -203,6 +197,111 @@ namespace MyCampusData.Migrations
                     b.HasIndex("LecturerId");
 
                     b.ToTable("ClassMeetings");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizAnswerEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRight")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("QuestionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("ClassQuizAnswers");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.ToTable("ClassQuizzes");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizQuestionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId");
+
+                    b.ToTable("ClassQuizQuestions");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizSubmissionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<float>("Score")
+                        .HasColumnType("real");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("ClassQuizSubmissions");
                 });
 
             modelBuilder.Entity("MyCampusData.Entities.CourseEntity", b =>
@@ -378,7 +477,7 @@ namespace MyCampusData.Migrations
                         .HasForeignKey("AssignmentSubmissionBundleId");
 
                     b.HasOne("MyCampusData.Entities.UserEntity", "Student")
-                        .WithMany()
+                        .WithMany("AssignmentSubmissions")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -426,6 +525,58 @@ namespace MyCampusData.Migrations
                     b.Navigation("Lecturer");
                 });
 
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizAnswerEntity", b =>
+                {
+                    b.HasOne("MyCampusData.Entities.ClassQuizQuestionEntity", "Question")
+                        .WithMany("Answers")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizEntity", b =>
+                {
+                    b.HasOne("MyCampusData.Entities.ClassEntity", "Class")
+                        .WithMany("Quizzes")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizQuestionEntity", b =>
+                {
+                    b.HasOne("MyCampusData.Entities.ClassQuizEntity", "Quiz")
+                        .WithMany("Questions")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizSubmissionEntity", b =>
+                {
+                    b.HasOne("MyCampusData.Entities.ClassQuizEntity", "Quiz")
+                        .WithMany("Submissions")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyCampusData.Entities.UserEntity", "Student")
+                        .WithMany("ExamSubmissions")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("MyCampusData.Entities.SessionEntity", b =>
                 {
                     b.HasOne("MyCampusData.Entities.UserEntity", "User")
@@ -467,7 +618,21 @@ namespace MyCampusData.Migrations
 
                     b.Navigation("Meetings");
 
+                    b.Navigation("Quizzes");
+
                     b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizEntity", b =>
+                {
+                    b.Navigation("Questions");
+
+                    b.Navigation("Submissions");
+                });
+
+            modelBuilder.Entity("MyCampusData.Entities.ClassQuizQuestionEntity", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("MyCampusData.Entities.CourseEntity", b =>
@@ -477,7 +642,11 @@ namespace MyCampusData.Migrations
 
             modelBuilder.Entity("MyCampusData.Entities.UserEntity", b =>
                 {
+                    b.Navigation("AssignmentSubmissions");
+
                     b.Navigation("Classes");
+
+                    b.Navigation("ExamSubmissions");
 
                     b.Navigation("LecturingClasses");
 
