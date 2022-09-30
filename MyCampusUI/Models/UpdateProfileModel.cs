@@ -29,7 +29,7 @@ namespace MyCampusUI.Models
         [Required, MinLength(10), MaxLength(16)]
         public string PhoneNumber { get; set; } = "";
 
-        [Required, MinLength(5), MaxLength(32)]
+        [Required, MinLength(2), MaxLength(32)]
         public string City { get; set; } = "";
 
         [Required]
