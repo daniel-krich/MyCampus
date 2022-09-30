@@ -1,0 +1,14 @@
+﻿[
+  {
+    "Id": "8085339C-07B6-42BE-AD10-7DF5EB0564CE",
+    "Name": "קורס פיתוח תוכנה 6 NET.",
+    "Description": "Full Stack Development עם התמחות ב - Microsoft .NET & ReactJS",
+    "CreatedAt": "2022-08-14T20:31:28.4533333"
+  },
+  {
+    "Id": "B21D2E8C-A9C9-4B25-A208-DE40F2967B6D",
+    "Name": "קורס פיתוח משחקים",
+    "Description": "פיתוח משחקים ב-Unity וכל מה שמסביב",
+    "CreatedAt": "2022-08-14T20:27:32.7233333"
+  }
+]

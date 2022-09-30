@@ -1,0 +1,299 @@
+﻿[
+  {
+    "Id": "FDC4EC99-271B-457D-A867-040778B1E50A",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-01T17:30:00",
+    "CreatedAt": "2022-08-16T14:59:50.6500000"
+  },
+  {
+    "Id": "4EBA53AF-E916-4F26-ACB5-0938A085C61C",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-18T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:17.7100000"
+  },
+  {
+    "Id": "01D65CE9-2754-470C-9967-16446C37B8E4",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-08T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:02.2600000"
+  },
+  {
+    "Id": "000B4F7A-8ADF-44DB-8081-1FC99845C261",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-14T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:11.3300000"
+  },
+  {
+    "Id": "75C147AA-1076-4B76-82B8-2C62BBE52695",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-28T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:29.7300000"
+  },
+  {
+    "Id": "78AE0EB1-CD66-4487-A49D-38539DFDEF4B",
+    "Title": "Learn .NET basics",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-08-16T08:52:38.2100000",
+    "CreatedAt": "2022-08-16T14:58:13.1333333"
+  },
+  {
+    "Id": "AF1C538F-5C57-4C8B-9A00-39BE3A1C7D69",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-30T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:33.1466667"
+  },
+  {
+    "Id": "88C52C24-57DD-4505-B3E7-4F1E57BE5AFD",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-19T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:18.8533333"
+  },
+  {
+    "Id": "60E35FE8-48C4-459D-ACE4-5CC242AC6CB1",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-05T17:30:00",
+    "CreatedAt": "2022-08-16T14:59:57.3466667"
+  },
+  {
+    "Id": "ADCF54E6-F884-4765-8829-6835EEA6ACE2",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-07T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:00.9400000"
+  },
+  {
+    "Id": "6F878D02-9365-433A-8516-6D7B34D2541E",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-26T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:27.6900000"
+  },
+  {
+    "Id": "5E2C5167-9C37-475D-B8C0-7A426E10A02E",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-25T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:26.1400000"
+  },
+  {
+    "Id": "6471D929-92FF-4555-AD3F-7D3D57E9CB98",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-21T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:21.2333333"
+  },
+  {
+    "Id": "F296539B-772B-4AA6-8346-7E36FB6E70DB",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-11T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:07.4933333"
+  },
+  {
+    "Id": "ACA3E42B-2958-4A08-8BAE-81A58EFE8ABB",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-29T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:30.7366667"
+  },
+  {
+    "Id": "DA346543-0244-4B83-B756-9385CD9B5E47",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-09T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:03.4966667"
+  },
+  {
+    "Id": "4EB0F4C8-3BB6-4213-8CBF-9761A1C064FA",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-03T17:30:00",
+    "CreatedAt": "2022-08-16T14:59:54.8966667"
+  },
+  {
+    "Id": "CC3FC18C-C029-4811-AAFD-990C8CB3E95B",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-16T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:13.9333333"
+  },
+  {
+    "Id": "C322A345-3AB5-47EA-B34A-9B0EBDFE99DC",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-13T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:10.1900000"
+  },
+  {
+    "Id": "21D85B05-409E-4DA2-A47F-A4D2407A55F5",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-24T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:24.8366667"
+  },
+  {
+    "Id": "370704D4-CFAE-421B-8D46-A75AF528A52A",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-27T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:28.6866667"
+  },
+  {
+    "Id": "F9607D6B-C557-4801-81A9-B532BC9FA3D0",
+    "Title": "Learn LINQ",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-08-25T17:30:00",
+    "CreatedAt": "2022-08-16T14:59:13.0366667"
+  },
+  {
+    "Id": "44772E5B-1CD0-4383-A577-B6FA874E6AB6",
+    "Title": "Learn classes and OOP",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-08-17T17:30:00",
+    "CreatedAt": "2022-08-16T14:58:39.7800000"
+  },
+  {
+    "Id": "97DC3D25-D3D7-4D3B-8219-BDF23DB0E5C7",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-12T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:08.6633333"
+  },
+  {
+    "Id": "12D7D085-0271-48C1-B871-BF6E6AFC3DA0",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-10T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:06.4633333"
+  },
+  {
+    "Id": "E99CD14B-AF7F-42A2-B619-C3306F9E6E51",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-02T17:30:00",
+    "CreatedAt": "2022-08-16T14:59:53.5666667"
+  },
+  {
+    "Id": "52178FA5-ABCD-4E7F-BCB2-C494B7F2BA98",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-20T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:20.2333333"
+  },
+  {
+    "Id": "D4B7F3E6-3671-4EBE-8D13-D7F1D065F76B",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-04T17:30:00",
+    "CreatedAt": "2022-08-16T14:59:56.0400000"
+  },
+  {
+    "Id": "6B2385D4-2119-4B86-BA4B-DDFA0E8A3E45",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-15T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:12.5633333"
+  },
+  {
+    "Id": "4CC825DA-6108-4707-85A4-E7574310E5F6",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-17T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:15.1966667"
+  },
+  {
+    "Id": "397AADB6-25D6-4948-97E5-E822994AB562",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-22T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:22.1866667"
+  },
+  {
+    "Id": "ECCD87E1-CC0B-41A5-9FDD-E855AE1CCA91",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-06T17:30:00",
+    "CreatedAt": "2022-08-16T14:59:59.3500000"
+  },
+  {
+    "Id": "9DE9A4AE-EB7E-478F-9EF0-F119DA36BA23",
+    "Title": "Generic meeting",
+    "MeetingUrl": "https://us06web.zoom.us/j/83663882593",
+    "ClassId": "7C129914-4625-46D3-B11D-3A6F122ACE07",
+    "LecturerId": "432D6F99-D2BF-4267-959F-1A039C950E0F",
+    "StartAt": "2022-09-23T17:30:00",
+    "CreatedAt": "2022-08-16T15:00:23.7266667"
+  }
+]
