@@ -5,7 +5,9 @@
 ### Core features
 - `Login`
 - `Register`
-- `JWT sessions`
+- `Sessions`
+- `Profile settings`
+- `Navigation`
 
 ### Features
 - `Courses management`
@@ -26,8 +28,8 @@
   - Submit quizzes and receive feedback immediately.
   
 - `Lecturer`
-  - Can create, update, delete and check submitted assignments of his students and hand out grades (Supports file attaching).
-  - Can create quizzes for his students to test their knowledge based on subjects that were studied in class.
+  - Create, update, delete and check submitted assignments of his students and hand out grades (Supports file attaching).
+  - Create quizzes for his students to test their knowledge based on subjects that were studied in class.
   
 - `Staff`
   - Create, update courses.
