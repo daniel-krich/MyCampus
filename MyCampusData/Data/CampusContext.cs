@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MyCampusData.Entities;
+using MyCampusData.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -151,6 +152,12 @@ namespace MyCampusData.Data
                 .HasOne(x => x.Student)
                 .WithMany(x => x.ExamSubmissions)
                 .HasForeignKey(x => x.StudentId);
+
+            modelBuilder.Entity<UserEntity>().HasData(SeedHelper.SeedData<UserEntity>("users.json"));
+            modelBuilder.Entity<CourseEntity>().HasData(SeedHelper.SeedData<CourseEntity>("courses.json"));
+            modelBuilder.Entity<ClassEntity>().HasData(SeedHelper.SeedData<ClassEntity>("classes.json"));
+            modelBuilder.Entity<UserClassEntity>().HasData(SeedHelper.SeedData<UserClassEntity>("userclasses.json"));
+            modelBuilder.Entity<ClassMeetingEntity>().HasData(SeedHelper.SeedData<ClassMeetingEntity>("meetings.json"));
         }
     }
 }
