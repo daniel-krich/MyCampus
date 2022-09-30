@@ -1,7 +1,7 @@
 ﻿@inject IDbContextFactory<CampusContext> campusContextFactory
 @inject IAuthenticationStateService authService
 @inject IJSRuntime jsRuntime
-@inject NavigationManager navManager
+@inject ICustomNavigationService navManager
 
 <EditForm Context="LoginContext" OnValidSubmit="@SubmitAsync" Model="this.login">
     <DataAnnotationsValidator />
@@ -40,7 +40,7 @@
             {
                 CookieModel cookie = await authService.CreateJwtSessionToken(login.Username, login.Password, login.RememberUser);
                 await jsRuntime.WriteCookie(CookiesConst.AccessCookie, cookie.Token, cookie.ExpireAt);
-                navManager.NavigateTo("/", true);
+                navManager.ForceRefresh();
             }
             catch (UnapprovedUserException)
             {

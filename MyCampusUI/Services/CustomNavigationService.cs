@@ -30,6 +30,11 @@ public class CustomNavigationService : IDisposable, ICustomNavigationService
         _navigationManager.NavigateTo(PreviousPath ?? _navigationManager.BaseUri, force);
     }
 
+    public void ForceRefresh()
+    {
+        _navigationManager.NavigateTo(CurrentPath ?? _navigationManager.BaseUri, true);
+    }
+
     public void NavigateTo(string path)
     {
         _navigationManager.NavigateTo(path);

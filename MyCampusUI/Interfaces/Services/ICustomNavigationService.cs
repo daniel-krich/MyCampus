@@ -10,5 +10,6 @@
         void NavigatePreviousOrDefault(bool force = default);
         void NavigateTo(string path);
         void NavigateTo(string path, bool forceLoad = default);
+        void ForceRefresh();
     }
 }
