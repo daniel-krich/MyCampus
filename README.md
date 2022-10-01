@@ -49,3 +49,21 @@
 | demo1 | 123456789 | Student |
 | demo2 | 123456789 | Lecturer |
 | demo3 | 123456789 | Staff/Admin |
+  
+  <hr />
+  
+### Screenshots for illustration
+  
+![s1](https://user-images.githubusercontent.com/87533517/193404337-7ca204db-a699-41d0-9f65-aaefbaa6741b.png)
+  
+  <hr />
+  
+![s2](https://user-images.githubusercontent.com/87533517/193404344-e184848a-2e15-4cf2-8fde-2cef95872503.png)
+  
+  <hr />
+  
+![s3](https://user-images.githubusercontent.com/87533517/193404345-0f127904-890f-4807-b7ad-a29b6cff177e.png)
+  
+  <hr />
+
+![s5](https://user-images.githubusercontent.com/87533517/193404348-6763331b-05f8-4108-897a-3e6eb1cb9131.png)
