@@ -13,7 +13,7 @@
 - `Courses management`
 - `Classes management`
 - `Students management`
-- `Meetings`
+- `Meetings schedule`
 - `Assignments`
 - `Quizzes`
 ###### Note: Some of the features are not 100% implemented yet and still under development.
@@ -25,7 +25,7 @@
   - Pretty much just exists and can't actually do anything until status changes.
   
 - `Student`
-  - View information about my profile, courses, classes, upcoming meetings, submitted assignments with feedback and quizzes.
+  - View information about my profile, courses, classes, meetings schedule, submitted assignments with feedback and quizzes.
   - Submit, update home assignments (Supports file attaching).
   - Submit quizzes and receive feedback immediately.
   
